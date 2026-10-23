@@ -1,11 +1,14 @@
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
+import {captureGlyphs,morphGlyphs,RollingTimer} from './motion.js';
 import {TypingFeedback,scatterCharacters} from './feedback.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
 const input=$('input');
 const feedback=new TypingFeedback();
+const rollingTimer=new RollingTimer($('timer'));
+let transition,transitionWidth;
 let burst,finishTimer,resultStats,restarting=false;
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
@@ -41,21 +44,30 @@ window.addEventListener('resize',()=>{
  if(!keyboardFocused){clearTimeout(settleTimer);settleTimer=setTimeout(measurePage,450);}
 });
 
-function restartWithShuffle(){
+async function restartWithShuffle(){
  if(restarting||!articles.length)return;
  restarting=true;completed=true;
  clearTimeout(finishTimer);burst?.cancel();burst=null;
  input.blur();composing=false;clearPending();
  $('result').hidden=true;$('game').classList.remove('finished','bursting');
- burst=scatterCharacters(spans,true);$('game').classList.add('scrambling');
- setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('scrambling');restarting=false;restart();},burst.duration);
+ const before=captureGlyphs(spans,$('viewport'));
+ $('game').classList.add('scrambling');
+ // Lay out the next article invisibly first; particles land on its exact glyph positions.
+ restart(chooseArticle(articles,article?.id));completed=true;
+ const after=captureGlyphs(spans,$('viewport'));
+ transitionWidth=innerWidth;transition=morphGlyphs(before,after,$('viewport'));
+ try{await transition.finished;}finally{
+  transition.cancel();transition=null;
+  $('game').classList.remove('scrambling');restarting=false;completed=false;alignActiveLine();
+ }
 }
+window.addEventListener('resize',()=>{if(transition&&innerWidth!==transitionWidth)transition.cancel();});
 function restart(selected){
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
  $('article').classList.toggle('short-test',article.id==='en-test-short');
- input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('timer').classList.remove('running');$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
+ input.value='';input.removeAttribute('maxlength');rollingTimer.set(0,false);$('timer').classList.remove('running');$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
  spans=[];glyphs=[];
  let word;
  practice.units.forEach(unit=>{
@@ -157,5 +169,5 @@ for(const button of document.querySelectorAll('button')){
 }
 $('restart').onclick=$('again').onclick=restartWithShuffle;
 $('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
-function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
+function tick(){if(session)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}

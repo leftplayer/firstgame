@@ -85,3 +85,10 @@ button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55
 .result-summary .score{font-family:'Courier New',monospace;font-weight:700;letter-spacing:-2px}
 .result-summary #whole,.result-summary #fraction,.result-summary .unit{font-family:inherit;font-weight:700}
 .scrambling #article{visibility:hidden}
+
+.morph-layer{position:fixed;pointer-events:none;z-index:10;overflow:visible}
+.morph-glyph{position:absolute;white-space:pre;transform-origin:center;will-change:transform;line-height:37px}
+#timer{height:28px;min-width:4ch;line-height:28px;perspective:160px}
+.timer-digit{position:relative;display:inline-block;vertical-align:top;width:.65em;height:28px;overflow:hidden;text-align:center}
+.timer-current,.timer-outgoing{display:block;line-height:28px;transform-origin:center;backface-visibility:hidden}
+.timer-outgoing{position:absolute;inset:0}

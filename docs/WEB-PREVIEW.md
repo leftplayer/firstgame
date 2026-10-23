@@ -26,3 +26,5 @@ Mobile polish follow-up: result is no longer programmatically focusable/focused;
 English composition updates may finish a round as soon as the last letter arrives; no Enter or candidate confirmation is required. Chinese still waits for committed characters. The regression test sends compositionstart/compositionupdate for the last word and confirms completion before compositionend.
 
 The orange result time uses the same Courier New / monospace stack as metadata, at weight 700. All buttons play a distinct two-note sine sound, separate from typing and error feedback. Restart performs a 420ms shuffle of visible characters before selecting the next article; repeated taps during transition are ignored. Reduced-motion skips the shuffle.
+
+Restart 采用 760ms 连续字符过渡：按真实字形位置捕获旧文和新文，打散后在翻转中换字，再回弹到新文排版位置，支持中英文及字符数量变化。计时数字按变化数位滚动，进位同步更新。减少动态效果系统设置下直接切换。
