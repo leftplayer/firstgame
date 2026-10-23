@@ -31,3 +31,13 @@ test('Chinese preedit still waits for actual Chinese characters',()=>{
  const context={article:{language:'zh'},session,input:{value:''},spans:[{}],completed:false,composing:true,Date,feedback:{error(){}},alignActiveLine(){},$(){return {textContent:''}},finish(){throw Error('Must not finish preedit');}};
  runInNewContext(accept,context);context.accept('f',true);assert.equal(session.phase,'typing');
 });
+
+
+test('completion locks the editor and dismisses the keyboard even without VirtualKeyboard API',()=>{
+ const dismiss=source.slice(source.indexOf('function dismissKeyboard('),source.indexOf('function finish('));
+ for(const navigator of [{},{virtualKeyboard:{hide(){throw Error('unsupported');}}}]){
+  const input={readOnly:false,disabled:false,focused:true,blur(){this.focused=false;}};
+  const context={input,navigator};runInNewContext(dismiss,context);context.dismissKeyboard();
+  assert.equal(input.focused,false);assert.equal(input.readOnly,true);assert.equal(input.disabled,true);
+ }
+});

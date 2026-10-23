@@ -67,6 +67,7 @@ window.addEventListener('resize',()=>{if(transition&&innerWidth!==transitionWidt
 function restart(selected){
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
+ input.disabled=false;input.readOnly=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
  $('article').classList.toggle('short-test',article.id==='en-test-short');
  input.value='';input.removeAttribute('maxlength');rollingTimer.set(0,false);$('timer').classList.remove('running');$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
@@ -119,8 +120,15 @@ function alignActiveLine(){
 
 }
 window.addEventListener('resize',()=>requestAnimationFrame(alignActiveLine));
+function dismissKeyboard(){
+ // A completing IME can keep its editor active after blur alone.
+ input.readOnly=true;
+ input.blur();
+ input.disabled=true;
+ try{navigator.virtualKeyboard?.hide();}catch{}
+}
 function finish(){
- completed=true;const visible=captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
+ completed=true;dismissKeyboard();const visible=captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
  $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'52px':'';$('fraction').textContent='.'+parts[1];
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
@@ -130,7 +138,7 @@ function finish(){
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
- finishTimer=setTimeout(()=>{$('result').hidden=false;$('game').classList.add('finished');},Math.min(260,burst.duration));
+ finishTimer=setTimeout(()=>{dismissKeyboard();$('result').hidden=false;$('game').classList.add('finished');},Math.min(260,burst.duration));
 }
 function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{

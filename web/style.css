@@ -141,8 +141,8 @@ header{gap:16px}
 .font-preview-body{font:14px/1.6 var(--body-font);color:#bbb}
 .font-preview-data{font:700 14px/1.6 var(--data-font);color:#ffa124}
 #font-note{font:10px/1.4 Arial,sans-serif;color:#888;margin:5px 0 0;min-height:14px}
-#game .actions{bottom:calc(var(--font-panel-height) + 60px)}
-#game #message{bottom:calc(var(--font-panel-height) + 108px)}
+#game .actions{bottom:calc(var(--font-panel-height) + 80px)}
+#game #message{bottom:calc(var(--font-panel-height) + 128px)}
 .letter-pile{bottom:var(--font-panel-height)}
 .finished .result-summary{top:calc((100% - var(--font-panel-height))/2)}
 @media(max-height:620px){#font-lab{padding-top:6px;padding-bottom:6px}.font-lab-body{height:40vh}#font-lab button{min-height:32px}}
