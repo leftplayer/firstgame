@@ -1,5 +1,5 @@
 import {TypingSession,chooseArticle} from './session.js';
-import {prepareArticle,validPrefix} from './practice.js';
+import {prepareArticle} from './practice.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
@@ -56,18 +56,13 @@ function restart(selected){
 function focus(){if(!session||completed)return;measurePage();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
 function accept(value=input.value, provisional=false){
  if(!session||completed)return;
- const checked=validPrefix(value,session.target);
- session.input(checked.value,Date.now());
+ session.input(value,Date.now());
  // Never assign textarea.value during composition: that cancels mobile IMEs.
  if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  const states=session.states;
  states.forEach((state,i)=>spans[i].className='glyph '+state);
  alignActiveLine();
  $('status').textContent='';
- if(checked.wrong){
-  const bad=spans[session.cursor];
-  if(bad){bad.classList.add('wrong');bad.animate([{color:'#ff5c5c',background:'#521818'},{color:'#ff5c5c',background:'transparent'}],{duration:300,iterations:2});}
- }
  if(session.phase==='finished')finish();
 }
 function alignActiveLine(){
@@ -89,7 +84,7 @@ function finish(){
  completed=true;input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
  $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'52px':'';$('fraction').textContent='.'+parts[1];
  let message='这一刻，留下你的速度。';
- try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-strict'&&Number.isFinite(r.seconds));if(previous)message=seconds<previous.seconds?'你的速度，超越了上一次的自己。':'每一次专注，都在积累。';records.push({articleId:article.id,mode:'text-strict',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
+ try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text'&&Number.isFinite(r.seconds));if(previous)message=seconds<previous.seconds?'你的速度，超越了上一次的自己。':'每一次专注，都在积累。';records.push({articleId:article.id,mode:'text',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  $('message').textContent=message;$('result').hidden=false;$('game').classList.add('finished');$('again').focus({preventScroll:true});
 }
 function startClock(){if(session&&!completed)session.start(Date.now());}
