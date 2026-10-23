@@ -176,8 +176,8 @@ try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!respons
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
- en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],press:['Press Start 2P','Press Start 2P · 街机']},
- zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],kai:['LXGW WenKai TC','霞鹜文楷'],fusion:['NowTyping Fusion','缝合像素 · 12px'],ma:['Ma Shan Zheng','马善政 · 毛笔']}
+ en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典']},
+ zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],kai:['LXGW WenKai TC','霞鹜文楷'],fusion:['NowTyping Fusion','缝合像素 · 12px'],ma:['Ma Shan Zheng','马善政 · 毛笔'],chiron:['Chiron Hei HK','昭源黑体 · 清爽'],round:['Chiron GoRound TC','昭源环方 · 圆润'],butter:['ZCOOL QingKe HuangYou','庆科黄油 · 窄体']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
 let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'mono',zh:'sans'}]));

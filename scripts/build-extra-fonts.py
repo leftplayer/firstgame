@@ -12,7 +12,7 @@ def fetch(u):
   try:return urllib.request.urlopen(u,timeout=45).read()
   except Exception:
    if n==2:raise
-items=[('en-vt323','VT323',False),('en-plex','IBM Plex Mono',True),('en-tech','Share Tech Mono',False),('en-cutive','Cutive Mono',False),('en-courier','Courier Prime',True),('en-pixelify','Pixelify Sans',True),('en-press','Press Start 2P',False),('zh-ma','Ma Shan Zheng',False),('zh-liu','Liu Jian Mao Cao',False),('zh-xiaowei','ZCOOL XiaoWei',False)]
+items=[('zh-chiron','Chiron Hei HK',True),('zh-round','Chiron GoRound TC',True),('zh-butter','ZCOOL QingKe HuangYou',False),('en-vt323','VT323',False),('en-plex','IBM Plex Mono',True),('en-tech','Share Tech Mono',False),('en-cutive','Cutive Mono',False),('en-courier','Courier Prime',True),('en-pixelify','Pixelify Sans',True),('en-press','Press Start 2P',False),('zh-ma','Ma Shan Zheng',False),('zh-liu','Liu Jian Mao Cao',False),('zh-xiaowei','ZCOOL XiaoWei',False)]
 def google(item):
  key,family,bold=item
  u='https://fonts.googleapis.com/css2?'+urllib.parse.urlencode({'family':family+(':wght@400;700' if bold else ''),'text':zh if key.startswith('zh') else en,'display':'swap'})
