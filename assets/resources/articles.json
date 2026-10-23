@@ -1,8 +1,40 @@
 [
-  {"id":"zh-wind-1","language":"zh","text":"风穿过窗边，翻动桌上的书页。我们不必急着赶路，也不必立刻找到答案。把眼前的小事做好，让每一个平凡的日子，都留下自己的声音。"},
-  {"id":"zh-night-1","language":"zh","text":"夜色慢慢落下，街角的灯亮了起来。有人结束了一天的工作，有人刚刚开始追逐梦想。生活没有统一的节奏，你可以按照自己的步伐，走向想去的地方。"},
-  {"id":"zh-sea-1","language":"zh","text":"沿着海边的小路向前走，听浪花一次次拍打岸边。远处的船缓缓驶过，天空变成柔和的蓝色。此刻不需要复杂的计划，只要认真感受呼吸和微风。"},
-  {"id":"en-window-1","language":"en","text":"Light falls across the desk. A quiet room, a blank page, and a little time are enough to begin. Take one small step, then another. There is no need to rush."},
-  {"id":"en-road-1","language":"en","text":"The road turns toward the sea. We walk without a map and listen to the waves. Some days are made for moving fast. Today is made for noticing the world."},
-  {"id":"en-night-1","language":"en","text":"Beyond the window, the city is still awake. A train passes in the distance. You finish the last line and take a breath. Every small effort leaves a trace."}
+  {
+    "id": "zh-wind-1",
+    "language": "zh",
+    "text": "风穿过窗边，翻动桌上的书页。我们不必急着赶路，也不必立刻找到答案。把眼前的小事做好，让每一个平凡的日子，都留下自己的声音。"
+  },
+  {
+    "id": "zh-night-1",
+    "language": "zh",
+    "text": "夜色慢慢落下，街角的灯亮了起来。有人结束了一天的工作，有人刚刚开始追逐梦想。生活没有统一的节奏，你可以按照自己的步伐，走向想去的地方。"
+  },
+  {
+    "id": "zh-sea-1",
+    "language": "zh",
+    "text": "沿着海边的小路向前走，听浪花一次次拍打岸边。远处的船缓缓驶过，天空变成柔和的蓝色。此刻不需要复杂的计划，只要认真感受呼吸和微风。"
+  },
+  {
+    "id": "en-window-1",
+    "language": "en",
+    "text": "Light falls across the desk. A quiet room, a blank page, and a little time are enough to begin. Take one small step, then another. There is no need to rush."
+  },
+  {
+    "id": "en-road-1",
+    "language": "en",
+    "text": "The road turns toward the sea. We walk without a map and listen to the waves. Some days are made for moving fast. Today is made for noticing the world."
+  },
+  {
+    "id": "en-night-1",
+    "language": "en",
+    "text": "Beyond the window, the city is still awake. A train passes in the distance. You finish the last line and take a breath. Every small effort leaves a trace."
+  },
+  {
+    "id": "en-test-short",
+    "language": "en",
+    "text": "Hello world. Keep typing.",
+    "lineBreaks": [
+      13
+    ]
+  }
 ]

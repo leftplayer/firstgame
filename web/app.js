@@ -49,6 +49,7 @@ function restart(selected){
  spans=[];glyphs=[];
  let word;
  practice.units.forEach(unit=>{
+  if(article.lineBreaks?.includes(unit.start)){word=null;$('article').append(document.createElement('br'));}
   const glyph=document.createElement('span');glyph.className='glyph';
   glyph.textContent=unit.text;spans.push(glyph);
   if(article.language==='en'&&!/\s/.test(unit.text)){
