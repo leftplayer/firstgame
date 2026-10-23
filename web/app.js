@@ -67,7 +67,8 @@ function focus(){if(!session||completed)return;measurePage();feedback.unlock();i
 function accept(value=input.value, provisional=false){
  if(!session||completed)return;
  const previous=Array.from(session.value);
- session.input(value,Date.now(),!provisional);
+ // English keyboard predictions are already playable letters; do not wait for Enter.
+ session.input(value,Date.now(),!provisional||article.language==='en');
  // Never assign textarea.value during composition: that cancels mobile IMEs.
  if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  const states=session.states;
