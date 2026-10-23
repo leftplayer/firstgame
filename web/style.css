@@ -71,3 +71,12 @@ article{word-spacing:normal}
 .result-summary .metrics{flex-wrap:wrap;row-gap:8px}
 .metrics>div+div:before{margin:0 6px}
 @media(max-width:400px){.result-summary .metrics{font-size:11px}.metrics>div{gap:4px}.metrics>div+div:before{margin:0 5px}}
+
+/* No automatic or pointer focus ring on the results surface or controls. */
+#result,#result:focus,#result:focus-visible{outline:0!important;border:0!important;box-shadow:none!important}
+button,button:focus,button:focus-visible{outline:0;box-shadow:none;appearance:none;-webkit-appearance:none}
+button,button *{user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none}
+button::selection,button *::selection{background:transparent;color:inherit}
+button:focus-visible{text-decoration:underline;text-underline-offset:6px;text-decoration-color:#777}
+button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55}
+#article.short-test{max-width:280px}

@@ -45,6 +45,7 @@ function restart(selected){
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
+ $('article').classList.toggle('short-test',article.id==='en-test-short');
  input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('timer').classList.remove('running');$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
  spans=[];glyphs=[];
  let word;
@@ -105,7 +106,7 @@ function finish(){
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
- finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');$('result').focus({preventScroll:true});},burst.duration);
+ finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');},burst.duration);
 }
 function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{
@@ -133,6 +134,16 @@ input.addEventListener('input',event=>{
 });
 input.addEventListener('paste',e=>e.preventDefault());
 $('viewport').addEventListener('click',focus);$('viewport').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();focus();}});
+// Touch/mouse activation must not leave focus frames or text selection behind.
+for(const button of document.querySelectorAll('button')){
+ let releaseTimer;
+ const release=()=>{clearTimeout(releaseTimer);releaseTimer=setTimeout(()=>button.classList.remove('is-pressed'),100);};
+ button.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();clearTimeout(releaseTimer);button.classList.add('is-pressed');});
+ button.addEventListener('pointerup',release);
+ button.addEventListener('pointercancel',()=>button.classList.remove('is-pressed'));
+ button.addEventListener('pointerleave',release);
+ button.addEventListener('contextmenu',event=>event.preventDefault());
+}
 $('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
 $('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
