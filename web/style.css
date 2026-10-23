@@ -173,3 +173,10 @@ header{gap:16px;min-height:32px}
 .brand .brand-label{translate:0 var(--title-offset,0px)}
 
 .font-credit{font:10px/1.4 Arial,sans-serif;color:#999;margin:0;flex-shrink:0}
+
+/* Keep the currently edited sample visible while browsing font choices. */
+#font-active-preview{flex-shrink:0;border-bottom:1px solid #292929;padding:0 2px 8px}
+#font-active-label{font:10px/1.5 Arial,sans-serif;color:#aaa;margin-bottom:4px}
+#font-active-en,#font-active-zh{font-size:20px;line-height:1.5;font-weight:400;color:#eee;letter-spacing:0;overflow-wrap:anywhere}
+#font-active-preview[data-scope="title"]>div:not(:first-child){font-weight:700}
+#font-active-preview[data-scope="data"]>div:not(:first-child){font-weight:700;color:#ffa124}

@@ -203,7 +203,17 @@ async function loadTypeface(lang,key){
 }
 let fontTarget='body',fontDraft=structuredClone(fontChoice);
 const fontButtons=[];
+function refreshActivePreview(){
+ const scope=fontTarget,names={title:'标题与按钮',body:'正文',data:'计时与成绩'};
+ const en=fontOptions.en[fontChoice[scope].en],zh=fontOptions.zh[fontChoice[scope].zh];
+ $('font-active-preview').dataset.scope=scope;
+ $('font-active-label').textContent=names[scope]+' · '+en[0]+' / '+zh[1];
+ $('font-active-en').style.fontFamily='"'+en[0]+'", sans-serif';
+ $('font-active-zh').style.fontFamily='"'+zh[0]+'", sans-serif';
+ $('font-active-en').textContent=scope==='data'?'12.34s · AaBb WPM':scope==='title'?'NOW TYPING · Restart':'cat and dog';
+}
 function refreshFontButtons(){
+ refreshActivePreview();
  for(const b of document.querySelectorAll('[data-font-target]'))b.setAttribute('aria-pressed',String(b.dataset.fontTarget===fontTarget));
  for(const b of fontButtons)b.setAttribute('aria-pressed',String(fontDraft[fontTarget][b.dataset.fontLang]===b.dataset.fontKey));
 }
@@ -262,7 +272,8 @@ async function changeFonts(next){
   if(request!==fontRequest)return;
   fontChoice=next;
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
-  $('font-note').textContent='已应用 · 自动保存 · 切换不重置输入';
+  refreshActivePreview();
+  $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
   typographyReady=true;calibrateTypography();
   requestAnimationFrame(alignActiveLine);
