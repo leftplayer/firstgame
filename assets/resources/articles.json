@@ -1,33 +1,39 @@
 [
   {
-    "id": "zh-wind-1",
-    "language": "zh",
-    "text": "风穿过窗边，翻动桌上的书页。我们不必急着赶路，也不必立刻找到答案。把眼前的小事做好，让每一个平凡的日子，都留下自己的声音。"
-  },
-  {
-    "id": "zh-night-1",
-    "language": "zh",
-    "text": "夜色慢慢落下，街角的灯亮了起来。有人结束了一天的工作，有人刚刚开始追逐梦想。生活没有统一的节奏，你可以按照自己的步伐，走向想去的地方。"
-  },
-  {
-    "id": "zh-sea-1",
-    "language": "zh",
-    "text": "沿着海边的小路向前走，听浪花一次次拍打岸边。远处的船缓缓驶过，天空变成柔和的蓝色。此刻不需要复杂的计划，只要认真感受呼吸和微风。"
-  },
-  {
-    "id": "en-window-1",
+    "id": "en-alice-six-impossible",
     "language": "en",
-    "text": "Light falls across the desk. A quiet room, a blank page, and a little time are enough to begin. Take one small step, then another. There is no need to rush."
+    "source": "Through the Looking-Glass · Lewis Carroll",
+    "text": "I daresay you haven't had much practice. When I was your age, I always did it for half-an-hour a day. Why, sometimes I've believed as many as six impossible things before breakfast."
   },
   {
-    "id": "en-road-1",
+    "id": "en-sherlock-brainy",
     "language": "en",
-    "text": "The road turns toward the sea. We walk without a map and listen to the waves. Some days are made for moving fast. Today is made for noticing the world."
+    "source": "Sherlock · Irene Adler",
+    "text": "Brainy is the new sexy."
   },
   {
-    "id": "en-night-1",
+    "id": "en-friends-real-world",
     "language": "en",
-    "text": "Beyond the window, the city is still awake. A train passes in the distance. You finish the last line and take a breath. Every small effort leaves a trace."
+    "source": "Friends · Monica Geller",
+    "text": "Welcome to the real world. It sucks. You're gonna love it."
+  },
+  {
+    "id": "en-big-bang-tested",
+    "language": "en",
+    "source": "The Big Bang Theory · Sheldon Cooper",
+    "text": "I'm not insane, my mother had me tested!"
+  },
+  {
+    "id": "zh-yesterday-today-tomorrow",
+    "language": "zh",
+    "source": "昨天 今天 明天 · 赵本山、宋丹丹",
+    "text": "我叫白云。我叫黑土。我七十一。我七十五。"
+  },
+  {
+    "id": "zh-king-of-comedy",
+    "language": "zh",
+    "source": "喜剧之王 · 周星驰、张柏芝",
+    "text": "不上班行不行啊？不上班你养我啊？我养你啊。你先照顾好自己吧，小傻瓜。"
   },
   {
     "id": "en-test-short",

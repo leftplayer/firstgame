@@ -198,7 +198,7 @@ const fontLoads=new Map();let fontRequest=0;
 async function loadTypeface(lang,key){
  const id=lang+'-'+key;
  if(!fontLoads.has(id))fontLoads.set(id,(async()=>{
-  const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css?v=local-fonts-1';
+  const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css?v=quote-fonts-2';
   try{
    await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>reject(Error('font stylesheet'));document.head.append(link);});
    const family=fontOptions[lang][key][0],sample=lang==='zh'?articles.filter(a=>a.language==='zh').map(a=>a.text).join('')+'风穿过窗边正在打字':'Now typing';

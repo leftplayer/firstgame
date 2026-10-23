@@ -181,8 +181,8 @@ header{gap:16px;min-height:32px}
 .result-summary #fraction{color:#ffa124}
 .result-summary .score .unit{color:#fff;font-weight:400;margin-left:9px;letter-spacing:0}
 
-/* Collapsed debug tab stays at the side; expanded panel docks at the bottom. */
-#font-lab{top:30%;bottom:auto;left:auto;right:12px;padding:0;border:1px solid #333;border-radius:8px;max-width:calc(100% - 24px)}
+/* Collapsed debug tab stays in the bottom-right corner; expanded panel docks at the bottom. */
+#font-lab{top:auto;bottom:max(8px,env(safe-area-inset-bottom));left:auto;right:12px;padding:0;border:1px solid #333;border-radius:8px;max-width:calc(100% - 24px)}
 #font-lab summary{padding:8px 10px;min-height:0;font-size:11px;list-style:none}
 #font-lab summary::-webkit-details-marker{display:none}
 #font-lab summary span{display:none}
