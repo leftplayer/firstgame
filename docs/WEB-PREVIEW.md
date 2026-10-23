@@ -32,3 +32,6 @@ Restart 采用 760ms 连续字符过渡：按真实字形位置捕获旧文和�
 完成全文后，可见字符旋转下落、回弹并在底部保留为低亮度文字堆；260ms 后显示成绩。Restart 从文字堆当前位置重组，优先匹配同字，跨语言错峰换字。字符数上限120，底部最多5层，动画层不接收点击；支持减少动态效果。
 
 字体测试面板：EN 为 Roboto Mono / Roboto / Roboto Slab；中文为 Noto Sans SC / Noto Serif SC / LXGW WenKai TC。字体通过 Google Fonts 获取，按 ASCII 与内置中文文章、固定样句字符子集打包到 web/fonts，许可证随包保存；新增文章需重新生成中文子集。页面内按需加载，加载成功后切换全局字体，保留会话并重新计算活动行；localStorage 保存选择。测试面板可折叠。
+
+字体实验室 v2：11 款英文、8 款中文，标题与按钮 / 正文 / 计时与成绩各自独立选择中英文字体。共六个选择器，localStorage firstgame.fonts.v2 保存搭配，并兼容 v1。加载失败保留原搭配，快速切换只应用最后一次选择。字体本地按需加载，切换不重置输入；面板可折叠、内部滚动。单字重字体由浏览器合成粗体。
+新增来源：Google Fonts（VT323、IBM Plex Mono、Share Tech Mono、Cutive Mono、Courier Prime、Pixelify Sans、Press Start 2P、Ma Shan Zheng、Liu Jian Mao Cao、ZCOOL XiaoWei）；W95FA 来自 fontsource/font-files fonts/other/win95fa；Fusion Pixel 来自 TakWolf/fusion-pixel-font 2026.10.16 release 12px monospaced zh_hans；BoutiqueBitmap9x9 来自 scott0107000/BoutiqueBitmap9x9 1.93。所有新增字体附 OFL 授权。两款中文点阵子集内部重命名为 NowTyping Fusion / NowTyping Bitmap，字体原始作者及许可保留。

@@ -173,39 +173,61 @@ $('share').onclick=async()=>{const data={title:'Now Typing',text:`我用了 ${se
 function tick(){if(session)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
 
-// Font switches preserve the current test and recompute the active line after loading.
-const fontOptions={en:{mono:['Roboto Mono','等宽'],sans:['Roboto','无衬线'],serif:['Roboto Slab','衬线']},zh:{sans:['Noto Sans SC','黑体'],serif:['Noto Serif SC','宋体'],kai:['LXGW WenKai TC','楷体']}};
-let fontChoice={en:'mono',zh:'sans'},fontChanging=false;
-try{const saved=JSON.parse(localStorage.getItem('firstgame.fonts.v1')||'{}');for(const lang of ['en','zh'])if(fontOptions[lang][saved[lang]])fontChoice[lang]=saved[lang];}catch{}
-const fontLoads=new Map();
+// Font switches preserve input and recalculate wrapping only after the faces load.
+const fontOptions={
+ en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],w95:['W95FA','W95FA · 老 Windows'],vt323:['VT323','VT323 · 终端'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],tech:['Share Tech Mono','Share Tech Mono · 科技'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],pixelify:['Pixelify Sans','Pixelify Sans · 像素'],press:['Press Start 2P','Press Start 2P · 街机']},
+ zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],kai:['LXGW WenKai TC','霞鹜文楷'],fusion:['NowTyping Fusion','缝合像素 · 12px'],bitmap:['NowTyping Bitmap','精品点阵 · 9×9'],ma:['Ma Shan Zheng','马善政 · 毛笔'],liu:['Liu Jian Mao Cao','刘建毛草 · 草书'],xiaowei:['ZCOOL XiaoWei','站酷小薇 · 文艺']}
+};
+const fontScopes=['title','body','data'],fontLangs=['en','zh'];
+let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'mono',zh:'sans'}]));
+try{
+ const saved=JSON.parse(localStorage.getItem('firstgame.fonts.v2')||'null');
+ const legacy=JSON.parse(localStorage.getItem('firstgame.fonts.v1')||'{}');
+ for(const scope of fontScopes)for(const lang of fontLangs){const key=saved?.[scope]?.[lang]??legacy[lang];if(fontOptions[lang][key])fontChoice[scope][lang]=key;}
+}catch{}
+const fontLoads=new Map();let fontRequest=0;
 async function loadTypeface(lang,key){
  const id=lang+'-'+key;
  if(!fontLoads.has(id))fontLoads.set(id,(async()=>{
   const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css';
-  await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>reject(Error('font stylesheet'));document.head.append(link);});
-  const family=fontOptions[lang][key][0],sample=lang==='zh'?'风穿过窗边':'Now typing';
-  const loaded=await document.fonts.load('400 21px "'+family+'"',sample);
-  if(!loaded.length)throw Error('font unavailable');
-  await document.fonts.load('700 21px "'+family+'"',sample);
- })().catch(e=>{fontLoads.delete(id);throw e;}));
+  try{
+   await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>reject(Error('font stylesheet'));document.head.append(link);});
+   const family=fontOptions[lang][key][0],sample=lang==='zh'?'风穿过窗边':'Now typing';
+   const loaded=await document.fonts.load('400 21px "'+family+'"',sample);
+   if(!loaded.length)throw Error('font unavailable');
+   await document.fonts.load('700 21px "'+family+'"',sample);
+  }catch(e){link.remove();fontLoads.delete(id);throw e;}
+ })());
  return fontLoads.get(id);
 }
-async function changeFonts(next){
- if(fontChanging||restarting)return;
- fontChanging=true;
- const buttons=[...document.querySelectorAll('[data-font-en],[data-font-zh]')];buttons.forEach(b=>b.disabled=true);
- $('font-note').textContent='正在加载字体…';
- try{
-  await Promise.all(['en','zh'].map(lang=>loadTypeface(lang,next[lang])));
-  fontChoice=next;
-  for(const lang of ['en','zh'])pageStyle.setProperty('--font-'+lang,'"'+fontOptions[lang][next[lang]][0]+'"');
-  buttons.forEach(b=>{const lang=b.hasAttribute('data-font-en')?'en':'zh';b.setAttribute('aria-pressed',String(b.getAttribute('data-font-'+lang)===next[lang]));});
-  $('font-note').textContent=fontOptions.en[next.en][0]+' / '+fontOptions.zh[next.zh][0];
-  try{localStorage.setItem('firstgame.fonts.v1',JSON.stringify(next));}catch{}
-  requestAnimationFrame(alignActiveLine);
- }catch{$('font-note').textContent='字体加载失败，请点击选项重试';}
- finally{fontChanging=false;buttons.forEach(b=>b.disabled=false);}
+const fontSelects=[...document.querySelectorAll('[data-font-scope]')];
+for(const select of fontSelects){
+ const lang=select.dataset.fontLang,scope=select.dataset.fontScope;
+ for(const [key,[,label]] of Object.entries(fontOptions[lang])){const option=document.createElement('option');option.value=key;option.textContent=label;select.append(option);}
+ select.value=fontChoice[scope][lang];
+ select.addEventListener('change',()=>{feedback.button();const next=Object.fromEntries(fontScopes.map(scope=>[scope,Object.fromEntries(fontLangs.map(lang=>[lang,$('font-'+scope+'-'+lang).value]))]));changeFonts(next);});
 }
-for(const lang of ['en','zh'])for(const b of document.querySelectorAll('[data-font-'+lang+']'))b.addEventListener('click',()=>changeFonts({...fontChoice,[lang]:b.getAttribute('data-font-'+lang)}));
+function fitBrand(){
+ const brand=document.querySelector('.brand');brand.style.fontSize='';
+ const available=brand.parentElement.clientWidth-$('restart').offsetWidth-20;
+ const width=brand.scrollWidth;if(width>available)brand.style.fontSize=(parseFloat(getComputedStyle(brand).fontSize)*available/width)+'px';
+}
+async function changeFonts(next){
+ const request=++fontRequest;$('font-note').textContent='正在加载字体…';
+ try{
+  await Promise.all(fontScopes.flatMap(scope=>fontLangs.map(lang=>loadTypeface(lang,next[scope][lang]))));
+  if(request!==fontRequest)return;
+  fontChoice=next;
+  for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
+  $('font-note').textContent='已应用 · 自动保存 · 切换不重置输入';
+  try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
+  requestAnimationFrame(()=>{alignActiveLine();fitBrand();});
+ }catch{
+  if(request!==fontRequest)return;
+  for(const select of fontSelects)select.value=fontChoice[select.dataset.fontScope][select.dataset.fontLang];
+  $('font-note').textContent='加载失败，已保留原搭配；请重新选择重试';
+ }
+}
 new ResizeObserver(()=>pageStyle.setProperty('--font-panel-height',$('font-lab').getBoundingClientRect().height+'px')).observe($('font-lab'));
+window.addEventListener('resize',fitBrand);
 changeFonts(fontChoice);
