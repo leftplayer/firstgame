@@ -8,7 +8,7 @@ const accept=source.slice(source.indexOf('function accept('),source.indexOf('fun
 test('actual web accept handler retains wrong Chinese and advances through following commits',()=>{
  const session=new TypingSession('风穿过窗边，翻动'),input={value:'风穿错'},spans=Array.from(session.target,()=>({className:''}));
  let errorSounds=0;
- const context={article:{language:'zh'},feedback:{error(){errorSounds++;}},session,input,spans,completed:false,composing:false,Date,alignActiveLine(){},$(){return {textContent:''}},finish(){}};
+ const context={article:{language:'zh'},feedback:{space(){},combo(){},error(){errorSounds++;}},session,input,spans,completed:false,composing:false,Date,alignActiveLine(){},$(){return {textContent:''}},finish(){}};
  runInNewContext(accept,context);context.accept();
  assert.equal(input.value,'风穿错');assert.equal(session.cursor,3);assert.equal(spans[2].className,'glyph wrong');
  input.value+='窗边，翻动';context.accept();
@@ -20,7 +20,7 @@ test('English last predicted letter finishes without Enter or compositionend',()
  const target='cat and dog sun and sky bird';
  const session=new TypingSession(target,true);session.start(1000);
  const handlers={},input={value:'cat and dog sun and sky ',selectionStart:23,selectionEnd:23,addEventListener:(name,fn)=>handlers[name]=fn};
- const context={article:{language:'en'},session,input,spans:Array.from(target,()=>({className:''})),completed:false,composing:false,Date,feedback:{error(){}},alignActiveLine(){},$(){return {textContent:''}},startClock(){},clearPending(){},compositionStart:0,compositionEnd:0,compositionBase:'',finish(){context.completed=true;}};
+ const context={article:{language:'en'},session,input,spans:Array.from(target,()=>({className:''})),completed:false,composing:false,Date,feedback:{space(){},combo(){},error(){}},alignActiveLine(){},$(){return {textContent:''}},startClock(){},clearPending(){},compositionStart:0,compositionEnd:0,compositionBase:'',finish(){context.completed=true;}};
  const events=source.slice(source.indexOf("input.addEventListener('compositionstart'"),source.indexOf("input.addEventListener('paste'"));
  runInNewContext(accept+events,context);
  handlers.compositionstart();handlers.compositionupdate({data:'bir'});assert.equal(session.phase,'typing');
@@ -28,7 +28,7 @@ test('English last predicted letter finishes without Enter or compositionend',()
 });
 test('Chinese preedit still waits for actual Chinese characters',()=>{
  const session=new TypingSession('风',true);
- const context={article:{language:'zh'},session,input:{value:''},spans:[{}],completed:false,composing:true,Date,feedback:{error(){}},alignActiveLine(){},$(){return {textContent:''}},finish(){throw Error('Must not finish preedit');}};
+ const context={article:{language:'zh'},session,input:{value:''},spans:[{}],completed:false,composing:true,Date,feedback:{space(){},combo(){},error(){}},alignActiveLine(){},$(){return {textContent:''}},finish(){throw Error('Must not finish preedit');}};
  runInNewContext(accept,context);context.accept('f',true);assert.equal(session.phase,'typing');
 });
 

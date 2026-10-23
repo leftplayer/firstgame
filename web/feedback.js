@@ -1,6 +1,6 @@
 // Small synthesized clicks; no external audio downloads.
 export class TypingFeedback {
- constructor(){this.audio=null;this.lastTap=-Infinity;this.lastError=-Infinity;this.tapTimer=null;}
+ constructor(){this.audio=null;this.lastTap=-Infinity;this.lastError=-Infinity;this.tapTimer=null;this.lastSpace=-Infinity;this.comboMarks=new Set();this.comboAnimations=[];}
  unlock(){
   try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;this.audio??=new Audio();if(this.audio.state==='suspended')return this.audio.resume().catch(()=>{});}catch{}
  }
@@ -13,9 +13,37 @@ export class TypingFeedback {
   }catch{}
  }
  tap(){
-  const now=performance.now();if(now-this.lastTap<35)return;this.lastTap=now;
+  const now=performance.now();if(now-this.lastTap<35||now-this.lastSpace<60)return;this.lastTap=now;
   this.unlock();clearTimeout(this.tapTimer);this.tapTimer=setTimeout(()=>this.tone(620+Math.random()*90),20);
   try{navigator.vibrate?.(8);}catch{}
+ }
+ space(){
+  clearTimeout(this.tapTimer);
+  const now=performance.now();if(now-this.lastSpace<45)return;this.lastSpace=now;
+  this.unlock();this.tone(240,.07,0,.045,'sine');this.tone(480,.035,.018,.025,'triangle');
+ }
+ reset(){this.comboMarks.clear();this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];}
+ combo(previous,current,states,nodes){
+  let run=0,hit=-1;
+  for(let i=0;i<current.length;i++){
+   if(states[i]!=='correct'){run=0;continue;}
+   if(/\s/.test(current[i]))continue;
+   run++;
+   if(run%10===0&&i>=previous.length&&!this.comboMarks.has(i)){
+    this.comboMarks.add(i);hit=i;
+   }
+  }
+  if(hit<0||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];
+  nodes.slice(Math.max(0,hit-9),hit+1).forEach((node,i)=>{
+   if(states[Math.max(0,hit-9)+i]!=='correct'||!node.textContent.trim())return;
+   this.comboAnimations.push(node.animate([
+    {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'},
+    {color:'#ffb64d',textShadow:'0 0 12px #ff941acc',top:'-4px',offset:.32},
+    {color:'#fff0d6',textShadow:'0 0 5px #ff941a66',top:'1px',offset:.65},
+    {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'}
+   ],{duration:440,delay:i*18,easing:'ease-out'}));
+  });
  }
  error(){
   clearTimeout(this.tapTimer);

@@ -1,6 +1,6 @@
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
-import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer} from './motion.js?v=full-pile-6';
+import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer,countUpSeconds} from './motion.js?v=full-pile-6';
 import {TypingFeedback} from './feedback.js';
 const $=id=>document.getElementById(id);
 let typographyReady=false;
@@ -10,7 +10,7 @@ const input=$('input');
 const feedback=new TypingFeedback();
 const rollingTimer=new RollingTimer($('timer'));
 let transition,transitionWidth;
-let burst,finishTimer,resultStats,restarting=false;
+let burst,finishTimer,resultStats,resultCountUp,restarting=false;
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
@@ -65,6 +65,7 @@ async function restartWithShuffle(){
 }
 window.addEventListener('resize',()=>{if(transition&&innerWidth!==transitionWidth)transition.cancel();});
 function restart(selected){
+ resultCountUp?.cancel();resultCountUp=null;feedback.reset();
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
  input.disabled=false;input.readOnly=false;
@@ -97,8 +98,11 @@ function accept(value=input.value, provisional=false){
  if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  const states=session.states;
  const current=Array.from(session.value);
- if(states.some((state,i)=>state==='wrong'&&current[i]!==previous[i]))feedback.error();
+ const hasError=states.some((state,i)=>state==='wrong'&&current[i]!==previous[i]);
+ if(hasError)feedback.error();
+ else if(current.some((char,i)=>char===' '&&char!==previous[i]))feedback.space();
  states.forEach((state,i)=>spans[i].className='glyph '+state);
+ feedback.combo(previous,current,states,spans);
  alignActiveLine();
  $('status').textContent='';
  if(session.phase==='finished')finish();
@@ -129,7 +133,7 @@ function dismissKeyboard(){
 }
 function finish(){
  completed=true;dismissKeyboard();$('font-lab').open=false;const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
- $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction').textContent='.'+parts[1];
+ $('whole').textContent='0';$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction').textContent='.00';
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  resultStats=session.stats(Date.now());
@@ -138,7 +142,7 @@ function finish(){
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
- finishTimer=setTimeout(()=>{dismissKeyboard();$('result').hidden=false;$('game').classList.add('finished');},Math.min(260,burst.duration));
+ finishTimer=setTimeout(()=>{dismissKeyboard();$('result').hidden=false;$('game').classList.add('finished');resultCountUp=countUpSeconds(seconds,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction').textContent='.'+fraction;});},Math.min(260,burst.duration));
 }
 function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{

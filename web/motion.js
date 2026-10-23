@@ -93,3 +93,21 @@ export class RollingTimer{
   });
  }
 }
+
+// Presentation only: the measured result and share data never change.
+export function countUpSeconds(seconds,render,{duration=900,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,request=requestAnimationFrame,cancel=cancelAnimationFrame}={}){
+ let frame,started=null,stopped=false;
+ const target=Math.max(0,Math.round(seconds*100));
+ if(reduced){render((target/100).toFixed(2));return {cancel(){}};}
+ render('0.00');
+ function tick(now){
+  if(stopped)return;
+  started??=now;
+  const progress=Math.min(1,Math.max(0,(now-started)/duration));
+  const value=progress===1?target:Math.floor(target*(1-Math.pow(1-progress,3)));
+  render((value/100).toFixed(2));
+  if(progress<1)frame=request(tick);
+ }
+ frame=request(tick);
+ return {cancel(){stopped=true;cancel(frame);}};
+}
