@@ -1,0 +1,1 @@
+{"name":"firstgame","version":"0.1.0","private":true,"creator":{"version":"3.8.8"},"scripts":{"test":"node --experimental-strip-types --test tests/*.test.mjs"}}
