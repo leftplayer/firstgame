@@ -13,3 +13,10 @@ article{line-height:37px;padding-bottom:185px}
 .unit{font-size:28px;margin-left:5px}
 
 .glyph.distant{filter:blur(.65px)}
+
+/* Fixed-height glyph cells give every browser identical line geometry. */
+#viewport{overflow:clip;overflow-anchor:none;height:185px}
+article{position:relative;line-height:37px;padding-bottom:0;overflow-anchor:none}
+.glyph{display:inline-block;height:37px;line-height:37px;vertical-align:top}
+#caret{position:absolute;display:block;width:0;height:37px;pointer-events:none}
+#caret:before{top:5px;height:27px;left:-1px}

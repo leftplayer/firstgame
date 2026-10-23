@@ -11,3 +11,19 @@ execFileSync(process.execPath,['--check','dist/app.js'],{stdio:'inherit'});
 execFileSync(process.execPath,['--check','dist/session.js'],{stdio:'inherit'});
 
 execFileSync(process.execPath,['--check','dist/practice.js'],{stdio:'inherit'});
+
+// Content-address every executable dependency and stylesheet, including imports.
+// An updated HTML entry can never mix old cached game rules with new CSS.
+const {createHash}=await import('node:crypto');
+const fingerprint=async(name,content)=>{
+ const hash=createHash('sha256').update(content).digest('hex').slice(0,12);
+ const versioned=name.replace(/(\.[^.]+)$/,'-'+hash+'$1');
+ await writeFile('dist/'+versioned,content);return versioned;
+};
+const sessionName=await fingerprint('session.js',await readFile('dist/session.js','utf8'));
+const practiceName=await fingerprint('practice.js',await readFile('dist/practice.js','utf8'));
+const appSource=(await readFile('dist/app.js','utf8')).replace('./session.js','./'+sessionName).replace('./practice.js','./'+practiceName);
+const appName=await fingerprint('app.js',appSource);
+const styleName=await fingerprint('style.css',await readFile('dist/style.css','utf8'));
+const html=(await readFile('dist/index.html','utf8')).replace('./app.js','./'+appName).replace('./style.css','./'+styleName);
+await writeFile('dist/index.html',html);

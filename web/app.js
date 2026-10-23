@@ -41,7 +41,7 @@ window.addEventListener('resize',()=>{
 function restart(selected){
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target);completed=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
- input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('viewport').scrollTop=0;$('status').textContent='';
+ input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
  spans=[];glyphs=[];
  practice.units.forEach(unit=>{
   const glyph=document.createElement('span');glyph.className='glyph';
@@ -69,15 +69,17 @@ function alignActiveLine(){
  if(!session||!caret||completed)return;
  const active=glyphs.find(g=>g.end>session.cursor)??glyphs[glyphs.length-1];
  if(!active)return;
- active.node.before(caret);
  const articleNode=$('article'),box=$('viewport');
- const lineHeight=parseFloat(getComputedStyle(articleNode).lineHeight);
- const relative=active.node.getBoundingClientRect().top-articleNode.getBoundingClientRect().top;
- const row=Math.max(0,Math.floor((relative+1)/lineHeight));
- // Keep one completed row above the active row.
- box.scrollTop=Math.max(0,row-1)*lineHeight;
- const origin=articleNode.getBoundingClientRect().top;
- glyphs.forEach(g=>{const glyphRow=Math.max(0,Math.floor((g.node.getBoundingClientRect().top-origin+1)/lineHeight));g.node.classList.toggle('distant',glyphRow>=Math.max(0,row-1)+3);});
+ // Use the rendered line tops, not a font-dependent estimated row number.
+ const rows=[...new Set(glyphs.map(g=>g.node.offsetTop))].sort((a,b)=>a-b);
+ const current=rows.indexOf(active.node.offsetTop);
+ const first=Math.max(0,current-1);
+ articleNode.style.transform=`translateY(${-rows[first]}px)`;
+ box.scrollTop=0;
+ caret.style.left=active.node.offsetLeft+'px';
+ caret.style.top=active.node.offsetTop+'px';
+ glyphs.forEach(g=>g.node.classList.toggle('distant',rows.indexOf(g.node.offsetTop)>=first+3));
+
 }
 window.addEventListener('resize',()=>requestAnimationFrame(alignActiveLine));
 function finish(){
@@ -116,4 +118,4 @@ $('viewport').addEventListener('click',focus);$('viewport').addEventListener('ke
 $('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
 $('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
-try{const response=await fetch('./articles.json');if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
+try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}

@@ -9,3 +9,5 @@ Incorrect characters remain in the input and are highlighted red in the original
 The viewport contains five lines. Row one stays at the top initially; afterward one previous row is retained so the active row stays second. Lower rows fade and blur. Result timer uses smaller typography.
 
 Run `npm test` and `node scripts/build-web.mjs`. Mobile native IME behavior still needs real-device verification.
+
+Rendered glyph cells have a fixed 37px line height. The article is translated by the actual previous row offset; an absolutely positioned caret cannot change wrapping. Assets and module imports use content hashes to avoid mixed cached deployments.
