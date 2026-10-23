@@ -44,3 +44,11 @@ Node.js 24：`npm test`。无第三方测试依赖，测试直接运行业务 Ty
 ## 首版边界
 
 计时采用墙钟时间，切到后台仍计入耗时。正确率不展示，必须修正全文才能结算。当前无反作弊承诺，微信键盘粘贴/联想仍需实机评估。数字仅轻量缩放过渡，完整翻页动效后置。字体使用系统 monospace，未嵌入 Windows 专有字体。微信分享使用平台默认截图，定制分享卡片后置。当前固定 750 × 1334 设计分辨率，保持比例适配，极端长屏可能留黑边；键盘遮挡和安全区需真机验证。
+
+## GitHub Pages 网页效果预览
+
+`web/` 是独立 DOM/CSS 预览界面，共用 `TypingSession.ts` 和文章 JSON，不是 Cocos 导出的 Web 包；用于先确认视觉与交互，不能替代小游戏验收。
+
+本地 Node 24 执行 `node scripts/build-web.mjs`，再运行 `python -m http.server 8080 --directory dist`，访问 http://localhost:8080 。
+
+仓库 Settings → Pages → Source 选择 **GitHub Actions**。推送 main 或手动运行 **Deploy web preview to Pages** 自动测试、构建、发布。预期公开地址为 https://leftplayer.github.io/firstgame/ ，以部署任务输出为准。仓库当前为组织私有仓库，Pages 可用性取决于组织套餐；若界面要求升级，不要为了部署擅自公开源仓库。
