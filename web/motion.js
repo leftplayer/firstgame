@@ -56,7 +56,7 @@ export function fallGlyphs(glyphs,container){
   const row=heights[col]++;const bottom=12+Math.min(row,4)*11;
   const x=18+col*22+(Math.random()-.5)*8,angle=(Math.random()-.5)*110;
   const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
-  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,color:'#777'});layer.append(node);nodes.push(node);
+  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color:'#777'});layer.append(node);nodes.push(node);
   const sx=g.x-x,sy=g.y-(box.height-bottom-37),kick=(Math.random()-.5)*90;
   const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
   const frames=[
