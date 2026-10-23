@@ -38,14 +38,18 @@ window.addEventListener('resize',()=>{
 
 function restart(selected){
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);session=new TypingSession(article.text);completed=false;
+ input.lang=article.language==='en'?'en':'zh-CN';
  input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('viewport').scrollTop=0;$('status').textContent='';
  spans=Array.from(article.text).map(c=>{const n=document.createElement('span');n.textContent=c;$('article').append(n);if(/[，。！？；]/.test(c))$('article').append(document.createElement('br'));return n;});
  caret=document.createElement('span');caret.id='caret';$('article').prepend(caret);
  const url=new URL(location.href);url.searchParams.set('article',article.id);history.replaceState(null,'',url);
 }
 function focus(){if(!session||completed)return;measurePage();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
-function accept(){
- if(!session||completed||composing)return;session.input(input.value,Date.now());\n input.value=session.value;
+function accept(value=input.value, provisional=false){
+ if(!session||completed||(composing&&article.language!=='en'))return;
+ session.input(value,Date.now());
+ // Never assign textarea.value during composition: that cancels mobile IMEs.
+ if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  session.states.forEach((s,i)=>spans[i].className=s);
  if(spans[session.cursor])spans[session.cursor].before(caret);else $('article').append(caret);
  const box=$('viewport'),offset=caret.getBoundingClientRect().top-box.getBoundingClientRect().top;
@@ -67,14 +71,21 @@ input.addEventListener('compositionstart',()=>{
  compositionEnd=input.selectionEnd??compositionStart;
 });
 input.addEventListener('compositionupdate',event=>{
- // compositionupdate can fire before the textarea value changes.
- showPending(event.data??'');
+ // English letters take effect immediately, even while the keyboard predicts.
+ if(article?.language==='en'){
+  clearPending();
+  accept(compositionBase.slice(0,compositionStart)+(event.data??'')+compositionBase.slice(compositionEnd),true);
+ }else showPending(event.data??'');
 });
 input.addEventListener('compositionend',()=>{
  composing=false;clearPending();accept();
 });
 input.addEventListener('input',event=>{
- if(event.isComposing||composing){showPending(pendingFromValue());return;}
+ if(event.isComposing||composing){
+  if(article?.language==='en'){clearPending();accept(input.value,true);}
+  else showPending(pendingFromValue());
+  return;
+ }
  clearPending();accept();
 });
 input.addEventListener('paste',e=>e.preventDefault());
