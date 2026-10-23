@@ -36,14 +36,14 @@ article{position:relative;line-height:37px;padding-bottom:0;overflow-anchor:none
 .word{display:inline-block;white-space:nowrap;vertical-align:top;overflow-wrap:normal;word-break:normal}
 #timer.running{color:#ffa124}
 
-/* Minimal share poster: one orange score, quiet inline metadata. */
+/* Share poster: warm-white seconds, orange fraction, quiet metadata. */
 #result{padding:0 20px}
 .result-summary{position:absolute;top:46%;left:20px;right:20px;transform:translateY(-50%);text-align:center}
 .result-summary .score{position:static;width:auto;display:flex;align-items:baseline;justify-content:center;color:#ffa124;letter-spacing:-2px;line-height:1;font-weight:300}
-#whole{font-size:clamp(60px,18vw,80px);font-weight:300}
-#fraction{font-size:clamp(30px,9vw,40px);font-weight:300}
+#whole{font-size:clamp(52px,16vw,64px);font-weight:300}
+#fraction{font-size:clamp(36px,11vw,44px);font-weight:300}
 .score .unit{font-size:20px;color:inherit;margin-left:7px;letter-spacing:0}
-.result-summary .metrics{position:static;display:flex;justify-content:center;align-items:baseline;gap:0;margin:32px 0 0;font:12px/1.5 'Courier New',monospace;color:#aaa;white-space:nowrap}
+.result-summary .metrics{position:static;display:flex;justify-content:center;align-items:baseline;gap:0;margin:36px 0 0;font:12px/1.5 'Courier New',monospace;color:#aaa;white-space:nowrap}
 .metrics>div{display:flex;align-items:baseline;gap:5px}
 .metrics>div+div:before{content:'·';color:#666;margin:0 10px}
 .metrics dt{order:1;font:inherit;color:inherit;min-height:0}
@@ -81,7 +81,7 @@ button:focus-visible{text-decoration:underline;text-underline-offset:6px;text-de
 button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55}
 #article.short-test{max-width:280px}
 
-/* Match the metadata's monospace family, with a bold orange time. */
+/* Match the metadata family, with bold time digits. */
 .result-summary .score{font-family:'Courier New',monospace;font-weight:700;letter-spacing:-2px}
 .result-summary #whole,.result-summary #fraction,.result-summary .unit{font-family:inherit;font-weight:700}
 .scrambling #article{visibility:hidden}
@@ -157,8 +157,8 @@ header{gap:16px;min-height:32px}
 .actions #again,.actions #share{font-size:var(--action-size,15px)}
 #article{font-size:20px;line-height:36.75px}
 #timer{font-size:calc(21px * var(--data-scale,1));line-height:28px}
-#whole{font-size:calc(clamp(60px,18vw,80px) * var(--data-scale,1))}
-#fraction{font-size:calc(clamp(30px,9vw,40px) * var(--data-scale,1))}
+#whole{font-size:calc(clamp(52px,16vw,64px) * var(--data-scale,1))}
+#fraction{font-size:calc(clamp(36px,11vw,44px) * var(--data-scale,1))}
 .score .unit{font-size:calc(20px * var(--data-scale,1))}
 .result-summary .metrics{font-size:calc(12px * var(--data-scale,1))}
 .font-preview-title{font-size:calc(var(--title-size,24px) * .583333)}
@@ -174,3 +174,9 @@ header{gap:16px;min-height:32px}
 
 .font-credit{font:10px/1.4 Arial,sans-serif;color:#999;margin:0;flex-shrink:0}
 
+
+/* Selected time concept 01: a shared baseline with restrained orange accents. */
+.result-summary .score{color:#f2efe8;letter-spacing:-1px}
+.result-summary #whole{color:#f2efe8}
+.result-summary #fraction{color:#ffa124}
+.result-summary .score .unit{color:#888;font-weight:400;margin-left:9px;letter-spacing:0}
