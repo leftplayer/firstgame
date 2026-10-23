@@ -80,3 +80,8 @@ button::selection,button *::selection{background:transparent;color:inherit}
 button:focus-visible{text-decoration:underline;text-underline-offset:6px;text-decoration-color:#777}
 button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55}
 #article.short-test{max-width:280px}
+
+/* Match the metadata's monospace family, with a bold orange time. */
+.result-summary .score{font-family:'Courier New',monospace;font-weight:700;letter-spacing:-2px}
+.result-summary #whole,.result-summary #fraction,.result-summary .unit{font-family:inherit;font-weight:700}
+.scrambling #article{visibility:hidden}

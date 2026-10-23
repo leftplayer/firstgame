@@ -6,7 +6,7 @@ let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
 const input=$('input');
 const feedback=new TypingFeedback();
-let burst,finishTimer,resultStats;
+let burst,finishTimer,resultStats,restarting=false;
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
@@ -41,6 +41,15 @@ window.addEventListener('resize',()=>{
  if(!keyboardFocused){clearTimeout(settleTimer);settleTimer=setTimeout(measurePage,450);}
 });
 
+function restartWithShuffle(){
+ if(restarting||!articles.length)return;
+ restarting=true;completed=true;
+ clearTimeout(finishTimer);burst?.cancel();burst=null;
+ input.blur();composing=false;clearPending();
+ $('result').hidden=true;$('game').classList.remove('finished','bursting');
+ burst=scatterCharacters(spans,true);$('game').classList.add('scrambling');
+ setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('scrambling');restarting=false;restart();},burst.duration);
+}
 function restart(selected){
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
@@ -137,6 +146,7 @@ input.addEventListener('paste',e=>e.preventDefault());
 $('viewport').addEventListener('click',focus);$('viewport').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();focus();}});
 // Touch/mouse activation must not leave focus frames or text selection behind.
 for(const button of document.querySelectorAll('button')){
+ button.addEventListener('click',()=>feedback.button());
  let releaseTimer;
  const release=()=>{clearTimeout(releaseTimer);releaseTimer=setTimeout(()=>button.classList.remove('is-pressed'),100);};
  button.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();clearTimeout(releaseTimer);button.classList.add('is-pressed');});
@@ -145,7 +155,7 @@ for(const button of document.querySelectorAll('button')){
  button.addEventListener('pointerleave',release);
  button.addEventListener('contextmenu',event=>event.preventDefault());
 }
-$('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
+$('restart').onclick=$('again').onclick=restartWithShuffle;
 $('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
