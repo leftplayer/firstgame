@@ -273,6 +273,7 @@ async function changeFonts(next){
   await Promise.all(fontScopes.flatMap(scope=>fontLangs.map(lang=>loadTypeface(lang,next[scope][lang]))));
   if(request!==fontRequest)return;
   fontChoice=next;
+  pageStyle.setProperty('--result-tracking',next.data.en==='serif'?'0.5px':'normal');
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
    $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
