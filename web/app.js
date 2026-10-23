@@ -1,6 +1,6 @@
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
-import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer} from './motion.js';
+import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer} from './motion.js?v=full-pile-6';
 import {TypingFeedback} from './feedback.js';
 const $=id=>document.getElementById(id);
 let typographyReady=false;
@@ -128,8 +128,8 @@ function dismissKeyboard(){
  try{navigator.virtualKeyboard?.hide();}catch{}
 }
 function finish(){
- completed=true;dismissKeyboard();const visible=captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
- $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'52px':'';$('fraction').textContent='.'+parts[1];
+ completed=true;dismissKeyboard();$('font-lab').open=false;const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
+ $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction').textContent='.'+parts[1];
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  resultStats=session.stats(Date.now());
@@ -280,6 +280,6 @@ async function changeFonts(next){
   $('font-note').textContent='加载失败，已保留原搭配；请重新选择重试';
  }
 }
-new ResizeObserver(()=>pageStyle.setProperty('--font-panel-height',$('font-lab').getBoundingClientRect().height+'px')).observe($('font-lab'));
+
 window.addEventListener('resize',fitBrand);
 changeFonts(fontChoice);

@@ -1,10 +1,10 @@
 // Snapshots use actual glyph bounds, so English and Chinese can have different layouts.
-export function captureGlyphs(nodes,viewport){
+export function captureGlyphs(nodes,viewport,{all=false}={}){
  const box=viewport.getBoundingClientRect();
  return nodes.map(node=>{
   const r=node.getBoundingClientRect(),s=getComputedStyle(node);
   return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,color:s.color};
- }).filter(g=>g.text.trim()&&g.y>=-1&&g.y+g.height<=box.height+1);
+ }).filter(g=>g.text.trim()&&(all||(g.y>=-1&&g.y+g.height<=box.height+1)));
 }
 // Prefer identical characters, then pair remaining slots for cross-language changes.
 export function pairGlyphs(before,after){
@@ -49,24 +49,24 @@ export function fallGlyphs(glyphs,container){
  const box=layer.getBoundingClientRect(),animations=[],nodes=[];
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const columns=Math.max(1,Math.floor((box.width-36)/22)),heights=Array(columns).fill(0);
- const selected=glyphs.filter(g=>g.text.trim()).slice(-120);
+ const selected=glyphs.filter(g=>g.text.trim());
  selected.forEach((g,i)=>{
   // Prefer low neighboring columns; capped rows prevent a long passage covering the score.
   const a=Math.floor(Math.random()*columns),b=Math.floor(Math.random()*columns),col=heights[a]<=heights[b]?a:b;
-  const row=heights[col]++;const bottom=12+Math.min(row,4)*11;
+  const row=heights[col]++;const bottom=12+Math.min(row,8)*11;
   const x=18+col*22+(Math.random()-.5)*8,angle=(Math.random()-.5)*110;
   const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
-  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color:'#777'});layer.append(node);nodes.push(node);
-  const sx=g.x-x,sy=g.y-(box.height-bottom-37),kick=(Math.random()-.5)*90;
+  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color:'#fff'});layer.append(node);nodes.push(node);
+  const sx=g.x-x,sy=Math.max(0,g.y)-(box.height-bottom-37),kick=(Math.random()-.5)*90;
   const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
   const frames=[
    {transform:tr(sx,sy,0),opacity:1,offset:0},
    {transform:tr(sx+kick,sy-22,angle*.35),opacity:1,offset:.14,easing:'cubic-bezier(.45,0,1,1)'},
-   {transform:tr(0,0,angle+12),opacity:.55,offset:.68,easing:'ease-out'},
-   {transform:tr(kick*.08,-16,angle-8),opacity:.48,offset:.79,easing:'ease-in'},
-   {transform:tr(0,0,angle+3),opacity:.42,offset:.90},
-   {transform:tr(0,-3,angle-2),opacity:.42,offset:.95},
-   {transform:tr(0,0,angle),opacity:.42,offset:1}
+   {transform:tr(0,0,angle+12),opacity:1,offset:.68,easing:'ease-out'},
+   {transform:tr(kick*.08,-16,angle-8),opacity:1,offset:.79,easing:'ease-in'},
+   {transform:tr(0,0,angle+3),opacity:1,offset:.90},
+   {transform:tr(0,-3,angle-2),opacity:1,offset:.95},
+   {transform:tr(0,0,angle),opacity:1,offset:1}
   ];
   animations.push(node.animate(reduced?[frames.at(-1)]:frames,{duration:reduced?0:950+Math.random()*350,fill:'forwards',easing:'linear'}));
  });

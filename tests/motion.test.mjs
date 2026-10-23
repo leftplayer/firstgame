@@ -12,7 +12,7 @@ function setup(reduced=false){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -48,8 +48,18 @@ test('matching characters retain identity across a reordered passage',()=>{
 test('pile stays bounded and keeps glyphs until explicitly cancelled',async()=>{
  const env=setup(),container=new env.Node();container.getBoundingClientRect=()=>({width:360,height:740});
  const effect=env.fallGlyphs(Array.from({length:300},()=>({text:'字',x:30,y:100,font:'21px monospace'})),container);
- assert.equal(effect.nodes.length,120);
- assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=56));
+ assert.equal(effect.nodes.length,300);
+ assert.ok(effect.nodes.every(n=>n.style.font==='21px monospace'&&n.style.color==='#fff'));
+ assert.ok(env.animations.every(a=>a.frames.at(-1).opacity===1));
+ assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=100));
  await effect.finished;assert.equal(container.children[0].removed,undefined);
  effect.cancel();assert.equal(container.children[0].removed,true);assert.ok(env.animations.every(a=>a.cancelled));
+});
+
+test('full article capture preserves offscreen characters and repeated letters',()=>{
+ const env=setup(),texts=['风','a','a','，'];
+ const nodes=texts.map((textContent,i)=>({textContent,getBoundingClientRect:()=>({left:0,top:-100+i*40,width:20,height:30})}));
+ const viewport={getBoundingClientRect:()=>({left:0,top:0,height:40})};
+ assert.equal(env.captureGlyphs(nodes,viewport).length,0);
+ assert.deepEqual(Array.from(env.captureGlyphs(nodes,viewport,{all:true}),g=>g.text),texts);
 });
