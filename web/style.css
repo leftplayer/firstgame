@@ -100,3 +100,16 @@ button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55
 #result:not([hidden]) .actions{animation:score-arrive .4s ease-out both}
 @keyframes score-arrive{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
 .bursting #article{visibility:hidden}
+
+/* Now Typing wordmark and compact inset controls (concept 05). */
+header{gap:16px}
+.brand{font-family:Arial,Helvetica,sans-serif;font-size:clamp(20px,5.8vw,24px);font-weight:900;letter-spacing:-.8px;line-height:1.1;white-space:nowrap;color:#f4f4f4}
+.brand span{color:#ffa124}
+#restart,.actions #again,.actions #share{position:relative;flex:0 0 auto;min-width:80px;min-height:36px;padding:8px 14px;border:1px solid #363636;border-radius:7px;background:linear-gradient(155deg,#242424,#191919);color:#d5d5d5;font:500 14px/18px Arial,Helvetica,sans-serif;box-shadow:inset 0 1px 1px #ffffff0c,inset 0 -2px 4px #0005;opacity:1;transition:transform .1s ease,border-color .1s ease,box-shadow .1s ease,color .1s ease,background .1s ease}
+#restart::after,.actions button::after{content:'';position:absolute;inset:-5px 0}
+.actions{gap:20px}
+.actions #again,.actions #share{min-width:96px;min-height:40px;font-size:15px}
+.actions #share{color:#ffa124}
+#restart:active,#restart.is-pressed,.actions #again:active,.actions #again.is-pressed,.actions #share:active,.actions #share.is-pressed{border-color:#ffa124;color:#ffa124;background:#141414;box-shadow:inset 0 3px 7px #000c,0 0 0 1px #ffa12433,0 0 9px #ffa12422;transform:translateY(2px) scale(.98);opacity:1}
+#restart:focus-visible,.actions button:focus-visible{outline:2px solid #ffa124;outline-offset:3px;text-decoration:none}
+@media(max-width:350px){header{gap:10px}.brand{font-size:20px}#restart{min-width:72px;padding:8px 10px}}
