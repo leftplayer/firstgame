@@ -244,8 +244,6 @@ function calibrateTypography(){
  }
  const titleMetrics=glyphMeasure(family,700,'NOW TYPING');
  pageStyle.setProperty('--title-offset',titleMetrics.offset*24*typeScale('title','en',700,'H',71)/100+'px');
- pageStyle.setProperty('--body-en-size',21*typeScale('body','en',400,'x',52)+'px');
- pageStyle.setProperty('--body-zh-size',21*typeScale('body','zh',400,'风',88)+'px');
  $('article').dataset.language=article?.language??'en';
  pageStyle.setProperty('--data-scale',typeScale('data','en',700,'0',71));
  fitBrand();

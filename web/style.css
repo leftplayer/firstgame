@@ -155,15 +155,14 @@ header{gap:16px;min-height:32px}
 #restart{width:72px;height:32px;min-width:72px;min-height:32px;padding:0 8px;font-size:var(--restart-size,13px);line-height:30px;border-radius:6px}
 #restart::after{inset:-6px -3px}
 .actions #again,.actions #share{font-size:var(--action-size,15px)}
-#article{font-size:var(--body-en-size,21px);line-height:36.75px}
-#article[data-language="zh"]{font-size:var(--body-zh-size,21px)}
+#article{font-size:20px;line-height:36.75px}
 #timer{font-size:calc(21px * var(--data-scale,1));line-height:28px}
 #whole{font-size:calc(clamp(60px,18vw,80px) * var(--data-scale,1))}
 #fraction{font-size:calc(clamp(30px,9vw,40px) * var(--data-scale,1))}
 .score .unit{font-size:calc(20px * var(--data-scale,1))}
 .result-summary .metrics{font-size:calc(12px * var(--data-scale,1))}
 .font-preview-title{font-size:calc(var(--title-size,24px) * .583333)}
-.font-preview-body{font-size:calc(var(--body-en-size,21px) * .666667)}
+.font-preview-body{font-size:20px}
 .font-preview-data{font-size:calc(14px * var(--data-scale,1))}
 
 /* Center the visible letter shapes, including fonts with asymmetric metrics. */
