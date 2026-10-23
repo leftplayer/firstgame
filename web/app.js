@@ -281,5 +281,14 @@ async function changeFonts(next){
  }
 }
 
+function updateFontPanelLayout(){
+ const panel=$('font-lab'),open=panel.open;
+ pageStyle.setProperty('--font-panel-height',(open?panel.getBoundingClientRect().height:0)+'px');
+ $('game').classList.toggle('font-debug-open',open);
+ requestAnimationFrame(alignActiveLine);
+}
+$('font-lab').addEventListener('toggle',updateFontPanelLayout);
+new ResizeObserver(updateFontPanelLayout).observe($('font-lab'));
+updateFontPanelLayout();
 window.addEventListener('resize',fitBrand);
 changeFonts(fontChoice);

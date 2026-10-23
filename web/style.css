@@ -181,12 +181,19 @@ header{gap:16px;min-height:32px}
 .result-summary #fraction{color:#ffa124}
 .result-summary .score .unit{color:#888;font-weight:400;margin-left:9px;letter-spacing:0}
 
-/* Debug controls float over the page and never reserve space for the pile. */
+/* Collapsed debug tab stays at the side; expanded panel docks at the bottom. */
 #font-lab{top:30%;bottom:auto;left:auto;right:12px;padding:0;border:1px solid #333;border-radius:8px;max-width:calc(100% - 24px)}
 #font-lab summary{padding:8px 10px;min-height:0;font-size:11px;list-style:none}
 #font-lab summary::-webkit-details-marker{display:none}
 #font-lab summary span{display:none}
-#font-lab[open]{top:18%;width:420px;padding:10px 12px}
+#font-lab[open]{top:auto;bottom:0;left:20px;right:20px;width:auto;max-width:none;padding:10px 12px max(10px,env(safe-area-inset-bottom));border-radius:10px 10px 0 0;border-bottom:0}
 #font-lab[open] summary{padding:0 0 10px}
 #font-lab[open] summary span{display:inline}
-#font-lab .font-lab-body{height:min(410px,55vh)}
+#font-lab .font-lab-body{height:min(410px,43vh)}
+
+:root{--font-panel-height:0px}
+.letter-pile{bottom:var(--font-panel-height)}
+#game.font-debug-open .actions{bottom:calc(var(--font-panel-height) + 125px)}
+#game.font-debug-open #message{top:auto;bottom:calc(var(--font-panel-height) + 173px)}
+#game.font-debug-open .result-summary{top:calc((100% - var(--font-panel-height)) * .36)}
+#game.font-debug-open #viewport{height:min(185px,max(37px,calc(var(--page-height,100svh) - var(--font-panel-height) - 165px)))}
