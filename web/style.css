@@ -171,3 +171,5 @@ header{gap:16px;min-height:32px}
 .actions #again,.actions #share{min-width:88px;height:36px;min-height:36px}
 #restart .button-label,.actions .button-label{display:block;margin:0;line-height:1;transform:translateY(var(--label-offset,0px));font:inherit;color:inherit}
 .brand .brand-label{translate:0 var(--title-offset,0px)}
+
+.font-credit{font:10px/1.4 Arial,sans-serif;color:#999;margin:0;flex-shrink:0}
