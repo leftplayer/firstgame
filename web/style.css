@@ -92,3 +92,11 @@ button:active,button.is-pressed{transform:translateY(1px) scale(.95);opacity:.55
 .timer-digit{position:relative;display:inline-block;vertical-align:top;width:.65em;height:28px;overflow:hidden;text-align:center}
 .timer-current,.timer-outgoing{display:block;line-height:28px;transform-origin:center;backface-visibility:hidden}
 .timer-outgoing{position:absolute;inset:0}
+
+.letter-pile{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2}
+.pile-glyph{position:absolute;white-space:pre;line-height:37px;transform-origin:center}
+#result{z-index:3}
+#result:not([hidden]) .result-summary{animation:score-arrive .4s ease-out both}
+#result:not([hidden]) .actions{animation:score-arrive .4s ease-out both}
+@keyframes score-arrive{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
+.bursting #article{visibility:hidden}

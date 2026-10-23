@@ -11,7 +11,7 @@ function setup(reduced=false){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -37,4 +37,18 @@ test('shorter article retires surplus old characters',()=>{
 test('reduced motion skips particles and rolling',()=>{
  const env=setup(true);new env.RollingTimer(new env.Node()).set(1);
  env.morphGlyphs([],[],{});assert.equal(env.animations.length,0);assert.equal(env.document.body.children.length,0);
+});
+
+test('matching characters retain identity across a reordered passage',()=>{
+ const env=setup(),a={text:'a'},b={text:'b'},z={text:'z'};
+ const pairs=env.pairGlyphs([a,b,z],[{text:'b'},{text:'风'},{text:'a'}]);
+ assert.equal(pairs[0].from,b);assert.equal(pairs[2].from,a);assert.equal(pairs[1].from,z);
+});
+test('pile stays bounded and keeps glyphs until explicitly cancelled',async()=>{
+ const env=setup(),container=new env.Node();container.getBoundingClientRect=()=>({width:360,height:740});
+ const effect=env.fallGlyphs(Array.from({length:300},()=>({text:'字',x:30,y:100,font:'21px monospace'})),container);
+ assert.equal(effect.nodes.length,120);
+ assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=56));
+ await effect.finished;assert.equal(container.children[0].removed,undefined);
+ effect.cancel();assert.equal(container.children[0].removed,true);assert.ok(env.animations.every(a=>a.cancelled));
 });

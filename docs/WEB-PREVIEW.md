@@ -28,3 +28,5 @@ English composition updates may finish a round as soon as the last letter arrive
 The orange result time uses the same Courier New / monospace stack as metadata, at weight 700. All buttons play a distinct two-note sine sound, separate from typing and error feedback. Restart performs a 420ms shuffle of visible characters before selecting the next article; repeated taps during transition are ignored. Reduced-motion skips the shuffle.
 
 Restart 采用 760ms 连续字符过渡：按真实字形位置捕获旧文和新文，打散后在翻转中换字，再回弹到新文排版位置，支持中英文及字符数量变化。计时数字按变化数位滚动，进位同步更新。减少动态效果系统设置下直接切换。
+
+完成全文后，可见字符旋转下落、回弹并在底部保留为低亮度文字堆；260ms 后显示成绩。Restart 从文字堆当前位置重组，优先匹配同字，跨语言错峰换字。字符数上限120，底部最多5层，动画层不接收点击；支持减少动态效果。

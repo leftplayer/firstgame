@@ -1,7 +1,7 @@
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
-import {captureGlyphs,morphGlyphs,RollingTimer} from './motion.js';
-import {TypingFeedback,scatterCharacters} from './feedback.js';
+import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer} from './motion.js';
+import {TypingFeedback} from './feedback.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
@@ -47,15 +47,16 @@ window.addEventListener('resize',()=>{
 async function restartWithShuffle(){
  if(restarting||!articles.length)return;
  restarting=true;completed=true;
- clearTimeout(finishTimer);burst?.cancel();burst=null;
+ clearTimeout(finishTimer);
+ const before=burst?captureGlyphs(burst.nodes,$('game')):captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));
+ burst?.cancel();burst=null;
  input.blur();composing=false;clearPending();
  $('result').hidden=true;$('game').classList.remove('finished','bursting');
- const before=captureGlyphs(spans,$('viewport'));
  $('game').classList.add('scrambling');
  // Lay out the next article invisibly first; particles land on its exact glyph positions.
  restart(chooseArticle(articles,article?.id));completed=true;
- const after=captureGlyphs(spans,$('viewport'));
- transitionWidth=innerWidth;transition=morphGlyphs(before,after,$('viewport'));
+ const after=captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));
+ transitionWidth=innerWidth;transition=morphGlyphs(before,after,$('game'));
  try{await transition.finished;}finally{
   transition.cancel();transition=null;
   $('game').classList.remove('scrambling');restarting=false;completed=false;alignActiveLine();
@@ -118,7 +119,7 @@ function alignActiveLine(){
 }
 window.addEventListener('resize',()=>requestAnimationFrame(alignActiveLine));
 function finish(){
- completed=true;burst=scatterCharacters(spans);$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
+ completed=true;const visible=captureGlyphs(spans,$('viewport')).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
  $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'52px':'';$('fraction').textContent='.'+parts[1];
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
@@ -128,7 +129,7 @@ function finish(){
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
- finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');},burst.duration);
+ finishTimer=setTimeout(()=>{$('result').hidden=false;$('game').classList.add('finished');},Math.min(260,burst.duration));
 }
 function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{

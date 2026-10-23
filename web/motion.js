@@ -6,36 +6,71 @@ export function captureGlyphs(nodes,viewport){
   return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,color:s.color};
  }).filter(g=>g.text.trim()&&g.y>=-1&&g.y+g.height<=box.height+1);
 }
+// Prefer identical characters, then pair remaining slots for cross-language changes.
+export function pairGlyphs(before,after){
+ const unused=new Set(before.map((_,i)=>i));
+ const pairs=after.map(to=>{const i=[...unused].find(i=>before[i].text===to.text);if(i!==undefined)unused.delete(i);return {from:i===undefined?null:before[i],to};});
+ for(const pair of pairs)if(!pair.from&&unused.size){const i=unused.values().next().value;unused.delete(i);pair.from=before[i];}
+ return pairs.concat([...unused].map(i=>({from:before[i],to:null})));
+}
 export function morphGlyphs(before,after,viewport){
  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return {finished:Promise.resolve(),cancel(){}};
  const box=viewport.getBoundingClientRect(),layer=document.createElement('div');
- layer.className='morph-layer';layer.setAttribute('aria-hidden','true');layer.dataset.stage='scatter';
- Object.assign(layer.style,{left:box.left+'px',top:box.top+'px',width:box.width+'px',height:box.height+'px',maskImage:getComputedStyle(viewport).maskImage});
+ layer.className='morph-layer';layer.setAttribute('aria-hidden','true');layer.dataset.stage='assemble';
+ Object.assign(layer.style,{left:box.left+'px',top:box.top+'px',width:box.width+'px',height:box.height+'px'});
  document.body.append(layer);
  const animations=[],timers=[];
- const count=Math.max(before.length,after.length),order=Array.from({length:count},(_,i)=>i);
- for(let i=count-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
- for(let i=0;i<count;i++){
-  const from=before[i],to=after[order[i]];
-  const start=from??{...to,x:box.width/2,y:box.height/2};
-  const end=to??{...from,x:box.width/2,y:box.height/2};
-  const midX=Math.random()*Math.max(0,box.width-25),midY=Math.random()*Math.max(0,box.height-37);
-  const dx=end.x-start.x,dy=end.y-start.y,mx=midX-start.x,my=midY-start.y;
+ pairGlyphs(before,after).forEach(({from,to},i)=>{
+  const start=from??{...to,x:to.x+(Math.random()-.5)*80,y:to.y+70};
+  const end=to??{...from,x:from.x+(Math.random()-.5)*100,y:from.y+80};
+  const dx=end.x-start.x,dy=end.y-start.y;
+  const bend=(Math.random()-.5)*80,swap=.24+Math.random()*.22,duration=650+Math.random()*170;
+  const same=from?.text===to?.text;
   const node=document.createElement('span');node.className='morph-glyph';node.textContent=start.text;
   Object.assign(node.style,{left:start.x+'px',top:start.y+'px',font:start.font,color:start.color});layer.append(node);
   const transform=(x,y,s=1,r=0)=>`translate(${x}px,${y}px) rotate(${r}deg) scaleX(${s})`;
   animations.push(node.animate([
    {transform:transform(0,0),opacity:from?1:0,offset:0},
-   {transform:transform(mx,my,1,(i%2?1:-1)*35),opacity:1,offset:.28},
-   {transform:transform(mx,my,.02),opacity:1,offset:.43},
-   {transform:transform(mx,my,.02),opacity:1,offset:.46},
-   {transform:transform(dx,dy-5),opacity:to?1:0,offset:.88},
-   {transform:transform(dx,dy+2),opacity:to?1:0,offset:.95},
+   {transform:transform(dx*.12+bend,dy*.12-25,1,bend*.4),opacity:1,offset:.16},
+   {transform:transform(dx*.48+bend*.5,dy*.48,same?1:.05),opacity:1,offset:swap},
+   {transform:transform(dx*.53+bend*.4,dy*.53,same?1:.05),opacity:1,offset:swap+.035},
+   {transform:transform(dx,dy-4),opacity:to?1:0,offset:.83},
+   {transform:transform(dx,dy+1),opacity:to?1:0,offset:.94},
    {transform:transform(dx,dy),opacity:to?1:0,offset:1}
-  ],{duration:760,easing:'linear',fill:'forwards'}));
-  timers.push(setTimeout(()=>{if(to){node.textContent=to.text;node.style.font=to.font;node.style.color=to.color;}layer.dataset.stage='assemble';},338));
- }
+  ],{duration,easing:'linear',fill:'forwards'}));
+  timers.push(setTimeout(()=>{if(to){node.textContent=to.text;node.style.font=to.font;node.style.color=to.color;}},duration*(swap+.017)));
+ });
  return {finished:Promise.allSettled(animations.map(a=>a.finished)),cancel(){timers.forEach(clearTimeout);animations.forEach(a=>a.cancel());layer.remove();}};
+}
+
+// A bounded, bottom-anchored pile stays behind result controls after the fall.
+export function fallGlyphs(glyphs,container){
+ const layer=document.createElement('div');layer.className='letter-pile';layer.setAttribute('aria-hidden','true');container.append(layer);
+ const box=container.getBoundingClientRect(),animations=[],nodes=[];
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const columns=Math.max(1,Math.floor((box.width-36)/22)),heights=Array(columns).fill(0);
+ const selected=glyphs.filter(g=>g.text.trim()).slice(-120);
+ selected.forEach((g,i)=>{
+  // Prefer low neighboring columns; capped rows prevent a long passage covering the score.
+  const a=Math.floor(Math.random()*columns),b=Math.floor(Math.random()*columns),col=heights[a]<=heights[b]?a:b;
+  const row=heights[col]++;const bottom=12+Math.min(row,4)*11;
+  const x=18+col*22+(Math.random()-.5)*8,angle=(Math.random()-.5)*110;
+  const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
+  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,color:'#777'});layer.append(node);nodes.push(node);
+  const sx=g.x-x,sy=g.y-(box.height-bottom-37),kick=(Math.random()-.5)*90;
+  const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
+  const frames=[
+   {transform:tr(sx,sy,0),opacity:1,offset:0},
+   {transform:tr(sx+kick,sy-22,angle*.35),opacity:1,offset:.14,easing:'cubic-bezier(.45,0,1,1)'},
+   {transform:tr(0,0,angle+12),opacity:.55,offset:.68,easing:'ease-out'},
+   {transform:tr(kick*.08,-16,angle-8),opacity:.48,offset:.79,easing:'ease-in'},
+   {transform:tr(0,0,angle+3),opacity:.42,offset:.90},
+   {transform:tr(0,-3,angle-2),opacity:.42,offset:.95},
+   {transform:tr(0,0,angle),opacity:.42,offset:1}
+  ];
+  animations.push(node.animate(reduced?[frames.at(-1)]:frames,{duration:reduced?0:950+Math.random()*350,fill:'forwards',easing:'linear'}));
+ });
+ return {duration:reduced?0:1300,nodes,finished:Promise.allSettled(animations.map(a=>a.finished)),cancel(){animations.forEach(a=>a.cancel());layer.remove();}};
 }
 
 export class RollingTimer{
