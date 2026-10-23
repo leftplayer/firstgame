@@ -1,9 +1,17 @@
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
+import {TypingFeedback,scatterCharacters} from './feedback.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
 const input=$('input');
+const feedback=new TypingFeedback();
+let burst,finishTimer,resultStats;
+function syncFeedback(){
+ for(const [id,key] of [['sound','sound'],['haptic','haptic']]){$(id).setAttribute('aria-pressed',String(feedback[key]));$(id).textContent=(key==='sound'?'音效':'震动')+' '+(feedback[key]?'开':'关');}
+}
+for(const key of ['sound','haptic'])$(key).onclick=()=>{feedback[key]=!feedback[key];feedback.save();feedback.unlock();syncFeedback();};
+syncFeedback();
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
@@ -39,7 +47,8 @@ window.addEventListener('resize',()=>{
 });
 
 function restart(selected){
- input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target);completed=false;
+ clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
+ input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
  input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
  spans=[];glyphs=[];
@@ -53,10 +62,10 @@ function restart(selected){
  alignActiveLine();
  const url=new URL(location.href);url.searchParams.set('article',article.id);history.replaceState(null,'',url);
 }
-function focus(){if(!session||completed)return;measurePage();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
+function focus(){if(!session||completed)return;measurePage();feedback.unlock();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
 function accept(value=input.value, provisional=false){
  if(!session||completed)return;
- session.input(value,Date.now());
+ session.input(value,Date.now(),!provisional);
  // Never assign textarea.value during composition: that cancels mobile IMEs.
  if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  const states=session.states;
@@ -83,13 +92,18 @@ function alignActiveLine(){
 }
 window.addEventListener('resize',()=>requestAnimationFrame(alignActiveLine));
 function finish(){
- completed=true;input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
+ completed=true;burst=scatterCharacters(spans);$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
  $('whole').textContent=parts[0];$('whole').style.fontSize=parts[0].length>3?'52px':'';$('fraction').textContent='.'+parts[1];
  let message='这一刻，留下你的速度。';
- try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text'&&Number.isFinite(r.seconds));if(previous)message=seconds<previous.seconds?'你的速度，超越了上一次的自己。':'每一次专注，都在积累。';records.push({articleId:article.id,mode:'text',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
- $('message').textContent=message;$('result').hidden=false;$('game').classList.add('finished');$('again').focus({preventScroll:true});
+ try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));if(previous)message=seconds<previous.seconds?'你的速度，超越了上一次的自己。':'每一次专注，都在积累。';records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
+ resultStats=session.stats(Date.now());
+ $('accuracy').textContent=resultStats.accuracy.toFixed(1)+'%';
+ $('speed').textContent=String(Math.round(resultStats.cpm));
+ $('characters').textContent=String(resultStats.characters);
+ $('message').textContent=message;
+ finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');$('again').focus({preventScroll:true});},burst.duration);
 }
-function startClock(){if(session&&!completed)session.start(Date.now());}
+function startClock(){if(session&&!completed){session.start(Date.now());feedback.tap();}}
 input.addEventListener('keydown',event=>{
  if(!event.ctrlKey&&!event.metaKey&&!event.altKey&&(event.key.length===1||event.key==='Process'||event.keyCode===229))startClock();
 });
@@ -116,6 +130,6 @@ input.addEventListener('input',event=>{
 input.addEventListener('paste',e=>e.preventDefault());
 $('viewport').addEventListener('click',focus);$('viewport').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();focus();}});
 $('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
-$('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
+$('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，字速 ${Math.round(resultStats.cpm)} 字符/分钟，共 ${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}

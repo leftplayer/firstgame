@@ -5,26 +5,33 @@ export class TypingSession {
   phase: Phase = 'ready';
   startedAt: number | null = null;
   finishedAt: number | null = null;
-  constructor(target: string) {
+  allowErrors: boolean;
+  constructor(target: string, allowErrors = false) {
+    this.allowErrors = allowErrors;
     if (!target) throw new Error('Article must not be empty');
     this.target = target.normalize('NFC');
   }
   start(now: number): void {
     if (this.phase === 'ready') { this.startedAt = now; this.phase = 'typing'; }
   }
-  input(value: string, now: number): void {
+  input(value: string, now: number, finalize = true): void {
     if (this.phase === 'finished') return;
     const next = Array.from(value.normalize('NFC')).slice(0, Array.from(this.target).length).join('');
-    if (next === this.value) return;
     if (this.startedAt === null && next.length > 0) {
       this.startedAt = now;
       this.phase = 'typing';
     }
     this.value = next;
-    if (this.value === this.target) { this.finishedAt = now; this.phase = 'finished'; }
+    if (finalize && (this.value === this.target || (this.allowErrors && this.cursor === Array.from(this.target).length))) { this.finishedAt = now; this.phase = 'finished'; }
   }
   seconds(now: number): number {
     return this.startedAt === null ? 0 : Math.max(0, ((this.finishedAt ?? now) - this.startedAt) / 1000);
+  }
+  stats(now: number): { characters: number; correct: number; accuracy: number; cpm: number } {
+    const characters = this.cursor;
+    const correct = this.states.filter(state => state === 'correct').length;
+    const seconds = this.seconds(now);
+    return { characters, correct, accuracy: characters ? correct / characters * 100 : 0, cpm: seconds > 0 ? characters * 60 / seconds : 0 };
   }
   get cursor(): number { return Array.from(this.value).length; }
   get states(): ('pending' | 'correct' | 'wrong')[] {

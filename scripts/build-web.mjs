@@ -1,7 +1,7 @@
 import {mkdir,copyFile,readFile,writeFile} from 'node:fs/promises';
 import {stripTypeScriptTypes} from 'node:module';
 await mkdir('dist',{recursive:true});
-for(const name of ['index.html','style.css','app.js','practice.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
+for(const name of ['index.html','style.css','app.js','practice.js','feedback.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
 await copyFile('assets/resources/articles.json','dist/articles.json');
 await writeFile('dist/session.js',stripTypeScriptTypes(await readFile('assets/scripts/TypingSession.ts','utf8')));
 await writeFile('dist/.nojekyll','');
@@ -22,8 +22,11 @@ const fingerprint=async(name,content)=>{
 };
 const sessionName=await fingerprint('session.js',await readFile('dist/session.js','utf8'));
 const practiceName=await fingerprint('practice.js',await readFile('dist/practice.js','utf8'));
-const appSource=(await readFile('dist/app.js','utf8')).replace('./session.js','./'+sessionName).replace('./practice.js','./'+practiceName);
+const feedbackName=await fingerprint('feedback.js',await readFile('dist/feedback.js','utf8'));
+const appSource=(await readFile('dist/app.js','utf8')).replace('./session.js','./'+sessionName).replace('./practice.js','./'+practiceName).replace('./feedback.js','./'+feedbackName);
 const appName=await fingerprint('app.js',appSource);
 const styleName=await fingerprint('style.css',await readFile('dist/style.css','utf8'));
 const html=(await readFile('dist/index.html','utf8')).replace('./app.js','./'+appName).replace('./style.css','./'+styleName);
 await writeFile('dist/index.html',html);
+
+execFileSync(process.execPath,['--check','dist/feedback.js'],{stdio:'inherit'});

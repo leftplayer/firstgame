@@ -1,0 +1,47 @@
+// Small synthesized clicks; no external audio downloads.
+export class TypingFeedback {
+ constructor(){
+  this.audio=null;this.lastTap=-Infinity;this.sound=true;this.haptic=true;
+  try{const p=JSON.parse(localStorage.getItem('firstgame.feedback')||'{}');this.sound=p.sound!==false;this.haptic=p.haptic!==false;}catch{}
+ }
+ save(){try{localStorage.setItem('firstgame.feedback',JSON.stringify({sound:this.sound,haptic:this.haptic}));}catch{}}
+ unlock(){
+  if(!this.sound)return;
+  try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;this.audio??=new Audio();if(this.audio.state==='suspended')this.audio.resume().catch(()=>{});}catch{}
+ }
+ tone(frequency,duration=.035,delay=0,volume=.035){
+  try{const a=this.audio;if(!this.sound||a?.state!=='running')return;
+   const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;
+   o.type='triangle';o.frequency.setValueAtTime(frequency,t);o.frequency.exponentialRampToValueAtTime(frequency*.55,t+duration);
+   g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+duration);o.onended=()=>{o.disconnect();g.disconnect();};
+  }catch{}
+ }
+ tap(){
+  const now=performance.now();if(now-this.lastTap<35)return;this.lastTap=now;
+  this.unlock();this.tone(620+Math.random()*90);
+  try{if(this.haptic)navigator.vibrate?.(8);}catch{}
+ }
+ finish(){
+  this.unlock();[660,880,1100].forEach((f,i)=>this.tone(f,.12,i*.065,.045));
+  try{if(this.haptic)navigator.vibrate?.([15,40,25]);}catch{}
+ }
+}
+
+export function scatterCharacters(nodes){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return {duration:0,cancel(){}};
+ const layer=document.createElement('div');layer.className='burst-layer';layer.setAttribute('aria-hidden','true');
+ const viewport=document.getElementById('viewport').getBoundingClientRect();
+ const animations=[];
+ nodes.forEach(node=>{
+  const r=node.getBoundingClientRect();if(r.top<viewport.top||r.bottom>viewport.bottom+1||!node.textContent.trim())return;
+  const particle=document.createElement('span'),style=getComputedStyle(node);
+  particle.className='burst-character';particle.textContent=node.textContent;
+  Object.assign(particle.style,{left:r.left+'px',top:r.top+'px',font:style.font,lineHeight:style.lineHeight,color:node.classList.contains('wrong')?'#e17b7b':'#fff'});
+  layer.append(particle);
+  const x=(Math.random()-.5)*320,y=-70-Math.random()*170,angle=(Math.random()-.5)*160;
+  animations.push(particle.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},{transform:`translate(${x*.55}px,${y}px) rotate(${angle*.5}deg)`,opacity:.8,offset:.45},{transform:`translate(${x}px,${y+220}px) rotate(${angle}deg)`,opacity:0}],{duration:650,easing:'cubic-bezier(.16,.6,.4,1)',fill:'forwards'}));
+ });
+ document.body.append(layer);
+ return {duration:650,cancel(){animations.forEach(a=>a.cancel());layer.remove();}};
+}

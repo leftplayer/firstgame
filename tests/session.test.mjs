@@ -9,3 +9,15 @@ test('unicode characters and composition normalization',()=>{const s=new TypingS
 test('input is bounded by article length',()=>{const s=new TypingSession('ab');s.input('abc',100);assert.equal(s.value,'ab');});
 test('restart excludes current article',()=>{const a=[{id:'a',text:'a'},{id:'b',text:'b'}];assert.equal(chooseArticle(a,'a',()=>0).id,'b');assert.equal(chooseArticle([a[0]],'a').id,'a');});
 test('empty configuration fails explicitly',()=>{assert.throws(()=>new TypingSession(''));assert.throws(()=>chooseArticle([]));});
+
+test('web mode finishes full length with errors and reports final accuracy and speed',()=>{
+ const s=new TypingSession('风穿过。',true);s.start(1000);s.input('风错过。',31000);
+ assert.equal(s.phase,'finished');assert.deepEqual(s.stats(99999),{characters:4,correct:3,accuracy:75,cpm:8});
+});
+test('preedit cannot end round until composition commits, even with unchanged text',()=>{
+ const s=new TypingSession('ab',true);s.start(1000);s.input('ax',2000,false);assert.equal(s.phase,'typing');
+ s.input('ax',3000,true);assert.equal(s.phase,'finished');assert.equal(s.seconds(9999),2);
+});
+test('statistics handle unicode and zero duration without infinity',()=>{
+ const s=new TypingSession('😀。',true);s.input('😀。',1000);assert.deepEqual(s.stats(1000),{characters:2,correct:2,accuracy:100,cpm:0});
+});
