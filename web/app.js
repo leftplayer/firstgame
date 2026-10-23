@@ -49,9 +49,8 @@ function restart(selected){
  spans=[];glyphs=[];
  let word;
  practice.units.forEach(unit=>{
-  if(article.lineBreaks?.includes(unit.start)){word=null;$('article').append(document.createElement('br'));}
   const glyph=document.createElement('span');glyph.className='glyph';
-  glyph.textContent=unit.text;spans.push(glyph);
+  glyph.textContent=unit.text;if(article.language==='en'&&unit.text===' ')glyph.dataset.space='';spans.push(glyph);
   if(article.language==='en'&&!/\s/.test(unit.text)){
    if(!word){word=document.createElement('span');word.className='word';$('article').append(word);}
    word.append(glyph);
@@ -102,7 +101,8 @@ function finish(){
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  resultStats=session.stats(Date.now());
  $('accuracy').textContent=resultStats.accuracy.toFixed(1)+'%';
- $('speed').textContent=String(Math.round(resultStats.cpm));
+ $('speed').textContent=article.language==='en'?String(Math.round(resultStats.wpm)):'—';
+ $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
  finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');$('result').focus({preventScroll:true});},burst.duration);
@@ -134,6 +134,6 @@ input.addEventListener('input',event=>{
 input.addEventListener('paste',e=>e.preventDefault());
 $('viewport').addEventListener('click',focus);$('viewport').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();focus();}});
 $('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
-$('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，字速 ${Math.round(resultStats.cpm)} 字符/分钟，共 ${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
+$('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)$('timer').textContent=String(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}

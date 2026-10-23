@@ -12,12 +12,20 @@ test('empty configuration fails explicitly',()=>{assert.throws(()=>new TypingSes
 
 test('web mode finishes full length with errors and reports final accuracy and speed',()=>{
  const s=new TypingSession('风穿过。',true);s.start(1000);s.input('风错过。',31000);
- assert.equal(s.phase,'finished');assert.deepEqual(s.stats(99999),{characters:4,correct:3,accuracy:75,cpm:8});
+ assert.equal(s.phase,'finished');assert.deepEqual(s.stats(99999),{characters:4,correct:3,accuracy:75,cpm:8,words:0,wpm:0});
 });
 test('preedit cannot end round until composition commits, even with unchanged text',()=>{
  const s=new TypingSession('ab',true);s.start(1000);s.input('ax',2000,false);assert.equal(s.phase,'typing');
  s.input('ax',3000,true);assert.equal(s.phase,'finished');assert.equal(s.seconds(9999),2);
 });
 test('statistics handle unicode and zero duration without infinity',()=>{
- const s=new TypingSession('😀。',true);s.input('😀。',1000);assert.deepEqual(s.stats(1000),{characters:2,correct:2,accuracy:100,cpm:0});
+ const s=new TypingSession('😀。',true);s.input('😀。',1000);assert.deepEqual(s.stats(1000),{characters:2,correct:2,accuracy:100,cpm:0,words:0,wpm:0});
+});
+
+test('WPM uses actual English word count rather than five-character units',()=>{
+ const s=new TypingSession('cat and dog sun and sky',true);s.start(1000);s.input('cat and dog sun and sky',31000);
+ const stats=s.stats(90000);assert.equal(stats.words,6);assert.equal(stats.wpm,12);assert.equal(stats.characters,23);
+});
+test('word count ignores punctuation and preserves apostrophes and hyphenated words',()=>{
+ const s=new TypingSession("don't stop, well-known friend!",true);s.start(0);s.input(s.target,60000);assert.equal(s.stats(60000).words,4);
 });

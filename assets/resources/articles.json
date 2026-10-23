@@ -32,9 +32,6 @@
   {
     "id": "en-test-short",
     "language": "en",
-    "text": "Hello world. Keep typing.",
-    "lineBreaks": [
-      13
-    ]
+    "text": "cat and dog sun and sky"
   }
 ]
