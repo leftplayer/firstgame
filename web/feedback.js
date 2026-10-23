@@ -1,16 +1,11 @@
 // Small synthesized clicks; no external audio downloads.
 export class TypingFeedback {
- constructor(){
-  this.audio=null;this.lastTap=-Infinity;this.sound=true;this.haptic=true;
-  try{const p=JSON.parse(localStorage.getItem('firstgame.feedback')||'{}');this.sound=p.sound!==false;this.haptic=p.haptic!==false;}catch{}
- }
- save(){try{localStorage.setItem('firstgame.feedback',JSON.stringify({sound:this.sound,haptic:this.haptic}));}catch{}}
+ constructor(){this.audio=null;this.lastTap=-Infinity;this.lastError=-Infinity;this.tapTimer=null;}
  unlock(){
-  if(!this.sound)return;
   try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;this.audio??=new Audio();if(this.audio.state==='suspended')this.audio.resume().catch(()=>{});}catch{}
  }
  tone(frequency,duration=.035,delay=0,volume=.035){
-  try{const a=this.audio;if(!this.sound||a?.state!=='running')return;
+  try{const a=this.audio;if(a?.state!=='running')return;
    const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;
    o.type='triangle';o.frequency.setValueAtTime(frequency,t);o.frequency.exponentialRampToValueAtTime(frequency*.55,t+duration);
    g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+duration);
@@ -19,12 +14,18 @@ export class TypingFeedback {
  }
  tap(){
   const now=performance.now();if(now-this.lastTap<35)return;this.lastTap=now;
-  this.unlock();this.tone(620+Math.random()*90);
-  try{if(this.haptic)navigator.vibrate?.(8);}catch{}
+  this.unlock();clearTimeout(this.tapTimer);this.tapTimer=setTimeout(()=>this.tone(620+Math.random()*90),20);
+  try{navigator.vibrate?.(8);}catch{}
+ }
+ error(){
+  clearTimeout(this.tapTimer);
+  const now=performance.now();if(now-this.lastError<35)return;this.lastError=now;
+  this.unlock();this.tone(175,.10,0,.07);this.tone(125,.10,.055,.05);
  }
  finish(){
+  clearTimeout(this.tapTimer);
   this.unlock();[660,880,1100].forEach((f,i)=>this.tone(f,.12,i*.065,.045));
-  try{if(this.haptic)navigator.vibrate?.([15,40,25]);}catch{}
+  try{navigator.vibrate?.([15,40,25]);}catch{}
  }
 }
 

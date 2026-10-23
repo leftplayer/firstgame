@@ -13,6 +13,8 @@ Run `npm test` and `node scripts/build-web.mjs`. Mobile native IME behavior stil
 Rendered glyph cells have a fixed 37px line height. The article is translated by the actual previous row offset; an absolutely positioned caret cannot change wrapping. Assets and module imports use content hashes to avoid mixed cached deployments.
 
 
-Feedback: Web Audio creates quiet clicks after user interaction, with an 8ms vibration request on supported devices. Independent sound/haptic toggles are saved locally. Repeated keyboard/composition notifications within 35ms are coalesced. Missing APIs are harmless.
+Feedback: Web Audio creates quiet clicks after user interaction, with an 8ms vibration request on supported devices. Sound and haptics are always enabled with no in-page controls; old saved toggle preferences are ignored. Wrong characters use a distinct low double tone, replacing a pending normal click. Repeated keyboard/composition notifications within 35ms are coalesced. Missing APIs are harmless.
 
 Results: accuracy = correct positions / final input characters; speed = final input characters / elapsed minutes; character count includes punctuation and spaces, counts Unicode code points. Completion time freezes before the 650ms scatter effect. Only visible glyphs scatter; reduced-motion users skip the burst. Restart cancels pending animation and result reveal. Native share/copy includes all metrics.
+
+English non-whitespace tokens are unbreakable word containers. The active timer turns orange immediately on first input and resets to gray on Restart.

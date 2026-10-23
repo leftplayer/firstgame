@@ -7,11 +7,6 @@ let practice, glyphs=[];
 const input=$('input');
 const feedback=new TypingFeedback();
 let burst,finishTimer,resultStats;
-function syncFeedback(){
- for(const [id,key] of [['sound','sound'],['haptic','haptic']]){$(id).setAttribute('aria-pressed',String(feedback[key]));$(id).textContent=(key==='sound'?'音效':'震动')+' '+(feedback[key]?'开':'关');}
-}
-for(const key of ['sound','haptic'])$(key).onclick=()=>{feedback[key]=!feedback[key];feedback.save();feedback.unlock();syncFeedback();};
-syncFeedback();
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
@@ -50,12 +45,17 @@ function restart(selected){
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
  input.lang=article.language==='zh'?'zh-CN':'en';
- input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
+ input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('timer').classList.remove('running');$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('article').style.transform='';$('viewport').scrollTop=0;$('status').textContent='';
  spans=[];glyphs=[];
+ let word;
  practice.units.forEach(unit=>{
   const glyph=document.createElement('span');glyph.className='glyph';
   glyph.textContent=unit.text;spans.push(glyph);
-  $('article').append(glyph);glyphs.push({...unit,node:glyph});
+  if(article.language==='en'&&!/\s/.test(unit.text)){
+   if(!word){word=document.createElement('span');word.className='word';$('article').append(word);}
+   word.append(glyph);
+  }else{word=null;$('article').append(glyph);}
+  glyphs.push({...unit,node:glyph});
 
  });
  caret=document.createElement('span');caret.id='caret';$('article').prepend(caret);
@@ -65,10 +65,13 @@ function restart(selected){
 function focus(){if(!session||completed)return;measurePage();feedback.unlock();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
 function accept(value=input.value, provisional=false){
  if(!session||completed)return;
+ const previous=Array.from(session.value);
  session.input(value,Date.now(),!provisional);
  // Never assign textarea.value during composition: that cancels mobile IMEs.
  if(!provisional&&!composing&&input.value!==session.value)input.value=session.value;
  const states=session.states;
+ const current=Array.from(session.value);
+ if(states.some((state,i)=>state==='wrong'&&current[i]!==previous[i]))feedback.error();
  states.forEach((state,i)=>spans[i].className='glyph '+state);
  alignActiveLine();
  $('status').textContent='';
@@ -103,7 +106,7 @@ function finish(){
  $('message').textContent=message;
  finishTimer=setTimeout(()=>{burst?.cancel();burst=null;$('game').classList.remove('bursting');$('result').hidden=false;$('game').classList.add('finished');$('again').focus({preventScroll:true});},burst.duration);
 }
-function startClock(){if(session&&!completed){session.start(Date.now());feedback.tap();}}
+function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{
  if(!event.ctrlKey&&!event.metaKey&&!event.altKey&&(event.key.length===1||event.key==='Process'||event.keyCode===229))startClock();
 });
