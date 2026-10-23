@@ -2,6 +2,8 @@ import {mkdir,copyFile,readFile,writeFile,cp} from 'node:fs/promises';
 import {stripTypeScriptTypes} from 'node:module';
 await mkdir('dist',{recursive:true});
 await cp('web/fonts','dist/fonts',{recursive:true});
+const {bundleVendorFonts}=await import('./bundle-vendor-fonts.mjs');
+await bundleVendorFonts();
 for(const name of ['index.html','style.css','app.js','practice.js','feedback.js','motion.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
 await copyFile('assets/resources/articles.json','dist/articles.json');
 await writeFile('dist/session.js',stripTypeScriptTypes(await readFile('assets/scripts/TypingSession.ts','utf8')));

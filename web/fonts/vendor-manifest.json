@@ -1,0 +1,62 @@
+[
+  {
+    "file": "misans-cs.5dd139a4b434052f.0.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.5dd139a4b434052f.0.woff2",
+    "sha256": "4fc2d8f84a3ef13b8e395867744508dbbceb2128ef2a70f340bd67ffc3e7c57b"
+  },
+  {
+    "file": "misans-cs.e37f98eab1bffea9.1.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.e37f98eab1bffea9.1.woff2",
+    "sha256": "0bf0fed9b5fc8c7cccf0030303aa749d5058734f650f3c102f71d086e18bdeae"
+  },
+  {
+    "file": "misans-cs.4173509397f8aa3a.2.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4173509397f8aa3a.2.woff2",
+    "sha256": "390b4cd32448ec8e1f55005b23df8a69fc7f98fd9c75f2aa2b7ee2cda52b98e3"
+  },
+  {
+    "file": "misans-cs.1656bbfbf2b66170.3.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.1656bbfbf2b66170.3.woff2",
+    "sha256": "ac7f8cbb447ddff806c4e25115e2c0b9aa2c732badfca188b7b88f170b6a0686"
+  },
+  {
+    "file": "misans-cs.b3063c48c56d5c40.4.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.b3063c48c56d5c40.4.woff2",
+    "sha256": "b2632eecd66956b14432595903a283ad562812bbd2fdaa30d865f5db92112b2f"
+  },
+  {
+    "file": "misans-cs.5538fe618f9d7a60.5.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.5538fe618f9d7a60.5.woff2",
+    "sha256": "4a46d9b9b78e3bf58cc6b72b861dfb27341909b2dc3ecbbc5bb40a2106776df3"
+  },
+  {
+    "file": "misans-cs.246e8ea5197d9c54.6.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.246e8ea5197d9c54.6.woff2",
+    "sha256": "20b8661dc4151ed575acf201dc9710a858a92cf426a557d30e4384c8e4a368f6"
+  },
+  {
+    "file": "misans-cs.4ff84f9234f03a2b.7.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4ff84f9234f03a2b.7.woff2",
+    "sha256": "c8ea76c423b19448fa9cdb4e9f21567affcaab1d5c7fa289e66ed226606cf505"
+  },
+  {
+    "file": "misans-cs.e2f46f4ad5ed6851.8.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.e2f46f4ad5ed6851.8.woff2",
+    "sha256": "96075504541c79c3eead98e7ff8d2e66706666138c2acdf9caa0d44056958aac"
+  },
+  {
+    "file": "misans-cs.4c99c20b51689926.9.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4c99c20b51689926.9.woff2",
+    "sha256": "a8a35c5e298eedef1f188ae5907c5eb50c4b5929845d1d9ff568d1436e4b2db4"
+  },
+  {
+    "file": "HarmonyOS_Sans_SC_Regular.ttf",
+    "url": "https://raw.githubusercontent.com/openharmony/utils_system_resources/master/fonts/HarmonyOS_Sans_SC_Regular.ttf",
+    "sha256": "8b193c486e7fd959598d209e3974b5f3838f07384239a9f4d05d45d06e6116ae"
+  },
+  {
+    "file": "Alibaba-PuHuiTi-Regular.otf",
+    "url": "https://raw.githubusercontent.com/liruifengv/alibaba-puhuiti/master/alibabaFont/zh-cn/Alibaba-PuHuiTi-Regular.otf",
+    "sha256": "1c6820d3de274946117b713d509294da604ab4d3676075d595f4316de14979c5"
+  }
+]

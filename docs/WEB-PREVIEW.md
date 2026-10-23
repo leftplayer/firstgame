@@ -39,3 +39,5 @@ Restart 采用 760ms 连续字符过渡：按真实字形位置捕获旧文和�
 新增中文测试字体：Chiron Hei HK（昭源黑体）、Chiron GoRound TC（昭源环方）、ZCOOL QingKe HuangYou（站酷庆科黄油）。通过 Google Fonts CSS2 获取内置文章子集，许可证来自 google/fonts/ofl 对应目录，随字体本地打包。当前英文可选6款、中文8款，移除英文街机选项。正文固定20px，计时样例包含数字、大写与小写英文字母。
 
 中文候选已替换为思源黑体、思源宋体、MiSans、阿里巴巴普惠体、HarmonyOS Sans SC。旧的六款不再展示。新增字体按需使用完整原始字体或字体供应商提供的切片，未自行改写/裁剪字体文件。MiSans 来源 https://font.sec.miui.com/font/css?family=MiSans:400:Chinese_Simplify,Latin&display=swap；许可 https://hyperos.mi.com/font/zh/download/。普惠体使用 liruifengv/alibaba-puhuiti 前端示例仓库提供的原始 Alibaba-PuHuiTi-Regular.otf，来源 https://github.com/liruifengv/alibaba-puhuiti；官方说明 https://supplier.alibaba.com/us/news/PX909446.htm。HarmonyOS Sans SC 来自 OpenHarmony 官方 utils_system_resources/fonts 原始 TTF；许可 https://developer.huawei.com/consumer/cn/design/resource-V1。测试区显式标注使用字体。新增字体依赖外部字体服务，加载失败保留之前搭配并可重试。正文始终20px。
+
+字体加载修复：新增三款字体改由构建阶段下载原始文件，校验 vendor-manifest.json 中的 SHA-256 后随 Pages 部署。玩家浏览器只请求本站 ./fonts/vendor，完全不依赖 raw.githubusercontent.com 或小米 CDN。MiSans 使用覆盖现有文章及样例的官方原始切片；新增中文文章时需更新切片清单。鸿蒙及普惠体保留完整原始文件，不修改或转换。构建下载失败直接阻止部署；字体样式带版本参数，避免缓存旧的外链声明。
