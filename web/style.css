@@ -125,12 +125,16 @@ header{gap:16px}
 #font-lab{position:absolute;bottom:0;left:20px;right:20px;z-index:20;background:#0b0b0b;border:1px solid #262626;border-bottom:0;border-radius:10px 10px 0 0;padding:10px 12px max(10px,env(safe-area-inset-bottom));font:12px/1.4 Arial,sans-serif;color:#aaa;color-scheme:dark}
 #font-lab summary{cursor:pointer;color:#ddd;user-select:none;min-height:24px}
 #font-lab summary span{float:right;font-size:10px;color:#777}
-.font-lab-body{max-height:32vh;overflow-y:auto;overscroll-behavior:contain}
-.font-select-row{display:grid;grid-template-columns:68px minmax(0,1fr) minmax(0,1fr);align-items:center;gap:6px;margin-top:7px}
-.font-column-labels{font-size:10px;color:#777;margin-top:2px}
-.font-select-row>span{font-size:10px}
-.font-select-row select{width:100%;min-width:0;min-height:34px;padding:4px;border:1px solid #383838;border-radius:5px;background:#1b1b1b;color:#ddd;font:12px Arial,sans-serif}
-.font-select-row select:focus{outline:1px solid #ffa124;border-color:#ffa124}
+.font-lab-body{height:min(410px,43vh);display:flex;flex-direction:column;gap:8px}
+.font-scope-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex-shrink:0}
+#font-lab button{font:11px/1.3 Arial,sans-serif;color:#bbb;min-width:0;min-height:34px;padding:6px 5px;border:1px solid #363636;border-radius:6px;background:linear-gradient(#242424,#191919);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .1s,border-color .1s,background .1s}
+#font-lab button[aria-pressed="true"]{color:#ffa124;border-color:#a36a24;background:#2b2115}
+#font-lab button:active,#font-lab button.is-pressed{transform:translateY(2px);border-color:#ffa124;box-shadow:inset 0 2px 5px #000b,0 0 6px #ffa12433}
+#font-lab button:focus-visible{outline:2px solid #ffa124;outline-offset:2px}
+.font-options-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:0 2px 3px}
+.font-group-label{font-size:11px;color:#888;margin:3px 0 7px}
+.font-group-label:not(:first-child){margin-top:12px}
+.font-option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .font-preview{margin-top:9px;padding-top:7px;border-top:1px solid #222;line-height:1.6;overflow:hidden}
 .font-preview>div{overflow-wrap:anywhere}
 .font-preview-title{font:700 14px/1.6 var(--title-font);color:#eee}
@@ -141,4 +145,4 @@ header{gap:16px}
 #game #message{bottom:calc(var(--font-panel-height) + 108px)}
 .letter-pile{bottom:var(--font-panel-height)}
 .finished .result-summary{top:calc((100% - var(--font-panel-height))/2)}
-@media(max-height:620px){#font-lab{padding-top:6px;padding-bottom:6px}.font-select-row{margin-top:4px}.font-select-row select{min-height:30px}.font-lab-body{max-height:30vh}}
+@media(max-height:620px){#font-lab{padding-top:6px;padding-bottom:6px}.font-lab-body{height:40vh}#font-lab button{min-height:32px}}

@@ -200,13 +200,21 @@ async function loadTypeface(lang,key){
  })());
  return fontLoads.get(id);
 }
-const fontSelects=[...document.querySelectorAll('[data-font-scope]')];
-for(const select of fontSelects){
- const lang=select.dataset.fontLang,scope=select.dataset.fontScope;
- for(const [key,[,label]] of Object.entries(fontOptions[lang])){const option=document.createElement('option');option.value=key;option.textContent=label;select.append(option);}
- select.value=fontChoice[scope][lang];
- select.addEventListener('change',()=>{feedback.button();const next=Object.fromEntries(fontScopes.map(scope=>[scope,Object.fromEntries(fontLangs.map(lang=>[lang,$('font-'+scope+'-'+lang).value]))]));changeFonts(next);});
+let fontTarget='body',fontDraft=structuredClone(fontChoice);
+const fontButtons=[];
+function refreshFontButtons(){
+ for(const b of document.querySelectorAll('[data-font-target]'))b.setAttribute('aria-pressed',String(b.dataset.fontTarget===fontTarget));
+ for(const b of fontButtons)b.setAttribute('aria-pressed',String(fontDraft[fontTarget][b.dataset.fontLang]===b.dataset.fontKey));
 }
+for(const lang of fontLangs)for(const [key,[,label]] of Object.entries(fontOptions[lang])){
+ const button=document.createElement('button');button.type='button';button.dataset.fontLang=lang;button.dataset.fontKey=key;
+ button.textContent=label;button.title=label;button.setAttribute('aria-pressed','false');
+ button.addEventListener('click',()=>{feedback.button();fontDraft[fontTarget][lang]=key;refreshFontButtons();changeFonts(structuredClone(fontDraft));});
+ button.addEventListener('pointerdown',e=>{if(e.button===0)e.preventDefault();});
+ $('font-options-'+lang).append(button);fontButtons.push(button);
+}
+for(const button of document.querySelectorAll('[data-font-target]'))button.addEventListener('click',()=>{fontTarget=button.dataset.fontTarget;refreshFontButtons();});
+refreshFontButtons();
 function fitBrand(){
  const brand=document.querySelector('.brand');brand.style.fontSize='';
  const available=brand.parentElement.clientWidth-$('restart').offsetWidth-20;
@@ -224,7 +232,7 @@ async function changeFonts(next){
   requestAnimationFrame(()=>{alignActiveLine();fitBrand();});
  }catch{
   if(request!==fontRequest)return;
-  for(const select of fontSelects)select.value=fontChoice[select.dataset.fontScope][select.dataset.fontLang];
+  fontDraft=structuredClone(fontChoice);refreshFontButtons();
   $('font-note').textContent='加载失败，已保留原搭配；请重新选择重试';
  }
 }
