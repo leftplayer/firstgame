@@ -2,6 +2,17 @@ import {TypingSession,chooseArticle} from './session.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 const input=$('input');
+let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
+function clearPending(){pendingText?.remove();pendingText=undefined;}
+function showPending(text){
+ if(!session||completed||!caret)return;
+ if(!pendingText){pendingText=document.createElement('span');pendingText.className='composition';pendingText.setAttribute('aria-label','正在输入');}
+ pendingText.textContent=text;caret.before(pendingText);
+}
+function pendingFromValue(){
+ const suffixLength=compositionBase.length-compositionEnd;
+ return input.value.slice(compositionStart,Math.max(compositionStart,input.value.length-suffixLength));
+}
 const pageStyle=document.documentElement.style;
 let layoutWidth=innerWidth, keyboardFocused=false, settleTimer;
 function measurePage(){
@@ -26,15 +37,15 @@ window.addEventListener('resize',()=>{
 });
 
 function restart(selected){
- input.blur();article=selected??chooseArticle(articles,article?.id);session=new TypingSession(article.text);completed=false;
- input.value='';input.maxLength=article.text.length;$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('viewport').scrollTop=0;$('status').textContent='';
+ input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);session=new TypingSession(article.text);completed=false;
+ input.value='';input.removeAttribute('maxlength');$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('viewport').scrollTop=0;$('status').textContent='';
  spans=Array.from(article.text).map(c=>{const n=document.createElement('span');n.textContent=c;$('article').append(n);if(/[，。！？；]/.test(c))$('article').append(document.createElement('br'));return n;});
  caret=document.createElement('span');caret.id='caret';$('article').prepend(caret);
  const url=new URL(location.href);url.searchParams.set('article',article.id);history.replaceState(null,'',url);
 }
 function focus(){if(!session||completed)return;measurePage();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
 function accept(){
- if(!session||completed||composing)return;session.input(input.value,Date.now());
+ if(!session||completed||composing)return;session.input(input.value,Date.now());\n input.value=session.value;
  session.states.forEach((s,i)=>spans[i].className=s);
  if(spans[session.cursor])spans[session.cursor].before(caret);else $('article').append(caret);
  const box=$('viewport'),offset=caret.getBoundingClientRect().top-box.getBoundingClientRect().top;
@@ -50,7 +61,23 @@ function finish(){
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&Number.isFinite(r.seconds));if(previous)message=seconds<previous.seconds?'你的速度，超越了上一次的自己。':'每一次专注，都在积累。';records.push({articleId:article.id,seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  $('message').textContent=message;$('result').hidden=false;$('game').classList.add('finished');$('again').focus({preventScroll:true});
 }
-input.addEventListener('compositionstart',()=>composing=true);input.addEventListener('compositionend',()=>{composing=false;accept();});input.addEventListener('input',accept);input.addEventListener('paste',e=>e.preventDefault());
+input.addEventListener('compositionstart',()=>{
+ composing=true;compositionBase=input.value;
+ compositionStart=input.selectionStart??input.value.length;
+ compositionEnd=input.selectionEnd??compositionStart;
+});
+input.addEventListener('compositionupdate',event=>{
+ // compositionupdate can fire before the textarea value changes.
+ showPending(event.data??'');
+});
+input.addEventListener('compositionend',()=>{
+ composing=false;clearPending();accept();
+});
+input.addEventListener('input',event=>{
+ if(event.isComposing||composing){showPending(pendingFromValue());return;}
+ clearPending();accept();
+});
+input.addEventListener('paste',e=>e.preventDefault());
 $('viewport').addEventListener('click',focus);$('viewport').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();focus();}});
 $('restart').onclick=$('again').onclick=()=>{if(articles.length)restart();};
 $('share').onclick=async()=>{const data={title:'TYPE.',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
