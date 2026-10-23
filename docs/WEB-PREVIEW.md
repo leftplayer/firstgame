@@ -30,3 +30,5 @@ The orange result time uses the same Courier New / monospace stack as metadata, 
 Restart 采用 760ms 连续字符过渡：按真实字形位置捕获旧文和新文，打散后在翻转中换字，再回弹到新文排版位置，支持中英文及字符数量变化。计时数字按变化数位滚动，进位同步更新。减少动态效果系统设置下直接切换。
 
 完成全文后，可见字符旋转下落、回弹并在底部保留为低亮度文字堆；260ms 后显示成绩。Restart 从文字堆当前位置重组，优先匹配同字，跨语言错峰换字。字符数上限120，底部最多5层，动画层不接收点击；支持减少动态效果。
+
+字体测试面板：EN 为 Roboto Mono / Roboto / Roboto Slab；中文为 Noto Sans SC / Noto Serif SC / LXGW WenKai TC。字体通过 Google Fonts 获取，按 ASCII 与内置中文文章、固定样句字符子集打包到 web/fonts，许可证随包保存；新增文章需重新生成中文子集。页面内按需加载，加载成功后切换全局字体，保留会话并重新计算活动行；localStorage 保存选择。测试面板可折叠。

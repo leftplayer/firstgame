@@ -8,6 +8,7 @@ function setup(reduced=false){
  class Node{
   constructor(){this.style={};this.dataset={};this.children=[];this.textContent='';}
   append(n){this.children.push(n);}replaceChildren(){this.children=[];}setAttribute(){}remove(){this.removed=true;}
+  getBoundingClientRect(){return {width:360,height:740};}
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};

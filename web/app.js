@@ -172,3 +172,40 @@ $('restart').onclick=$('again').onclick=restartWithShuffle;
 $('share').onclick=async()=>{const data={title:'Now Typing',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
+
+// Font switches preserve the current test and recompute the active line after loading.
+const fontOptions={en:{mono:['Roboto Mono','等宽'],sans:['Roboto','无衬线'],serif:['Roboto Slab','衬线']},zh:{sans:['Noto Sans SC','黑体'],serif:['Noto Serif SC','宋体'],kai:['LXGW WenKai TC','楷体']}};
+let fontChoice={en:'mono',zh:'sans'},fontChanging=false;
+try{const saved=JSON.parse(localStorage.getItem('firstgame.fonts.v1')||'{}');for(const lang of ['en','zh'])if(fontOptions[lang][saved[lang]])fontChoice[lang]=saved[lang];}catch{}
+const fontLoads=new Map();
+async function loadTypeface(lang,key){
+ const id=lang+'-'+key;
+ if(!fontLoads.has(id))fontLoads.set(id,(async()=>{
+  const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css';
+  await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>reject(Error('font stylesheet'));document.head.append(link);});
+  const family=fontOptions[lang][key][0],sample=lang==='zh'?'风穿过窗边':'Now typing';
+  const loaded=await document.fonts.load('400 21px "'+family+'"',sample);
+  if(!loaded.length)throw Error('font unavailable');
+  await document.fonts.load('700 21px "'+family+'"',sample);
+ })().catch(e=>{fontLoads.delete(id);throw e;}));
+ return fontLoads.get(id);
+}
+async function changeFonts(next){
+ if(fontChanging||restarting)return;
+ fontChanging=true;
+ const buttons=[...document.querySelectorAll('[data-font-en],[data-font-zh]')];buttons.forEach(b=>b.disabled=true);
+ $('font-note').textContent='正在加载字体…';
+ try{
+  await Promise.all(['en','zh'].map(lang=>loadTypeface(lang,next[lang])));
+  fontChoice=next;
+  for(const lang of ['en','zh'])pageStyle.setProperty('--font-'+lang,'"'+fontOptions[lang][next[lang]][0]+'"');
+  buttons.forEach(b=>{const lang=b.hasAttribute('data-font-en')?'en':'zh';b.setAttribute('aria-pressed',String(b.getAttribute('data-font-'+lang)===next[lang]));});
+  $('font-note').textContent=fontOptions.en[next.en][0]+' / '+fontOptions.zh[next.zh][0];
+  try{localStorage.setItem('firstgame.fonts.v1',JSON.stringify(next));}catch{}
+  requestAnimationFrame(alignActiveLine);
+ }catch{$('font-note').textContent='字体加载失败，请点击选项重试';}
+ finally{fontChanging=false;buttons.forEach(b=>b.disabled=false);}
+}
+for(const lang of ['en','zh'])for(const b of document.querySelectorAll('[data-font-'+lang+']'))b.addEventListener('click',()=>changeFonts({...fontChoice,[lang]:b.getAttribute('data-font-'+lang)}));
+new ResizeObserver(()=>pageStyle.setProperty('--font-panel-height',$('font-lab').getBoundingClientRect().height+'px')).observe($('font-lab'));
+changeFonts(fontChoice);

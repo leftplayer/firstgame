@@ -46,7 +46,7 @@ export function morphGlyphs(before,after,viewport){
 // A bounded, bottom-anchored pile stays behind result controls after the fall.
 export function fallGlyphs(glyphs,container){
  const layer=document.createElement('div');layer.className='letter-pile';layer.setAttribute('aria-hidden','true');container.append(layer);
- const box=container.getBoundingClientRect(),animations=[],nodes=[];
+ const box=layer.getBoundingClientRect(),animations=[],nodes=[];
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const columns=Math.max(1,Math.floor((box.width-36)/22)),heights=Array(columns).fill(0);
  const selected=glyphs.filter(g=>g.text.trim()).slice(-120);
