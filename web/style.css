@@ -146,3 +146,22 @@ header{gap:16px}
 .letter-pile{bottom:var(--font-panel-height)}
 .finished .result-summary{top:calc((100% - var(--font-panel-height))/2)}
 @media(max-height:620px){#font-lab{padding-top:6px;padding-bottom:6px}.font-lab-body{height:40vh}#font-lab button{min-height:32px}}
+
+/* Optical sizes: stable visible cap/x-height, independent of each font's em box. */
+header{gap:16px;min-height:32px}
+.brand{flex:1 1 0;font-size:var(--title-size,24px);line-height:32px;letter-spacing:0;min-width:0;color:#f4f4f4}
+.brand .brand-label{display:inline-block;transform-origin:left center;color:#f4f4f4}
+.brand .brand-label span{color:#ffa124}
+#restart{width:72px;height:32px;min-width:72px;min-height:32px;padding:0 8px;font-size:var(--restart-size,13px);line-height:30px;border-radius:6px}
+#restart::after{inset:-6px -3px}
+.actions #again,.actions #share{font-size:var(--action-size,15px)}
+#article{font-size:var(--body-en-size,21px);line-height:36.75px}
+#article[data-language="zh"]{font-size:var(--body-zh-size,21px)}
+#timer{font-size:calc(21px * var(--data-scale,1));line-height:28px}
+#whole{font-size:calc(clamp(60px,18vw,80px) * var(--data-scale,1))}
+#fraction{font-size:calc(clamp(30px,9vw,40px) * var(--data-scale,1))}
+.score .unit{font-size:calc(20px * var(--data-scale,1))}
+.result-summary .metrics{font-size:calc(12px * var(--data-scale,1))}
+.font-preview-title{font-size:calc(var(--title-size,24px) * .583333)}
+.font-preview-body{font-size:calc(var(--body-en-size,21px) * .666667)}
+.font-preview-data{font-size:calc(14px * var(--data-scale,1))}

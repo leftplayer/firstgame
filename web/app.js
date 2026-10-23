@@ -3,6 +3,7 @@ import {prepareArticle} from './practice.js';
 import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer} from './motion.js';
 import {TypingFeedback} from './feedback.js';
 const $=id=>document.getElementById(id);
+let typographyReady=false;
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
 const input=$('input');
@@ -82,7 +83,7 @@ function restart(selected){
 
  });
  caret=document.createElement('span');caret.id='caret';$('article').prepend(caret);
- alignActiveLine();
+ calibrateTypography();alignActiveLine();
  const url=new URL(location.href);url.searchParams.set('article',article.id);history.replaceState(null,'',url);
 }
 function focus(){if(!session||completed)return;measurePage();feedback.unlock();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
@@ -215,10 +216,38 @@ for(const lang of fontLangs)for(const [key,[,label]] of Object.entries(fontOptio
 }
 for(const button of document.querySelectorAll('[data-font-target]'))button.addEventListener('click',()=>{fontTarget=button.dataset.fontTarget;refreshFontButtons();});
 refreshFontButtons();
+// Compare visible glyph bounds rather than font em boxes. This keeps cap height,
+// lowercase text and digits stable across typewriter, serif and pixel faces.
+const typeMeasure=document.createElement('canvas').getContext('2d');
+function glyphMeasure(family,weight,text){
+ typeMeasure.font=weight+' 100px "'+family+'"';
+ const m=typeMeasure.measureText(text);
+ return {height:m.actualBoundingBoxAscent+m.actualBoundingBoxDescent,width:m.width};
+}
+function typeScale(scope,lang,weight,sample,target){
+ const m=glyphMeasure(fontOptions[lang][fontChoice[scope][lang]][0],weight,sample);
+ return m.height>0?target/m.height:1;
+}
+function calibrateTypography(){
+ if(!typographyReady||!typeMeasure)return;
+ pageStyle.setProperty('--title-size',24*typeScale('title','en',700,'H',71)+'px');
+ const family=fontOptions.en[fontChoice.title.en][0];
+ const label=glyphMeasure(family,500,'Restart');
+ const buttonSize=Math.min(100*9/label.height,100*54/label.width);
+ pageStyle.setProperty('--restart-size',buttonSize+'px');
+ pageStyle.setProperty('--action-size',Math.min(100*10.5/label.height,100*72/label.width)+'px');
+ pageStyle.setProperty('--body-en-size',21*typeScale('body','en',400,'x',52)+'px');
+ pageStyle.setProperty('--body-zh-size',21*typeScale('body','zh',400,'风',88)+'px');
+ $('article').dataset.language=article?.language??'en';
+ pageStyle.setProperty('--data-scale',typeScale('data','en',700,'0',71));
+ fitBrand();
+}
 function fitBrand(){
- const brand=document.querySelector('.brand');brand.style.fontSize='';
- const available=brand.parentElement.clientWidth-$('restart').offsetWidth-20;
- const width=brand.scrollWidth;if(width>available)brand.style.fontSize=(parseFloat(getComputedStyle(brand).fontSize)*available/width)+'px';
+ const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label');
+ label.style.transform='';
+ // On very narrow screens constrain only width, never shrink title height.
+ const width=label.getBoundingClientRect().width;
+ if(width>brand.clientWidth)label.style.transform='scaleX('+(brand.clientWidth/width)+')';
 }
 async function changeFonts(next){
  const request=++fontRequest;$('font-note').textContent='正在加载字体…';
@@ -229,7 +258,8 @@ async function changeFonts(next){
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
   $('font-note').textContent='已应用 · 自动保存 · 切换不重置输入';
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
-  requestAnimationFrame(()=>{alignActiveLine();fitBrand();});
+  typographyReady=true;calibrateTypography();
+  requestAnimationFrame(alignActiveLine);
  }catch{
   if(request!==fontRequest)return;
   fontDraft=structuredClone(fontChoice);refreshFontButtons();
