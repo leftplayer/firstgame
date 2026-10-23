@@ -1,7 +1,7 @@
 import {mkdir,copyFile,readFile,writeFile} from 'node:fs/promises';
 import {stripTypeScriptTypes} from 'node:module';
 await mkdir('dist',{recursive:true});
-for(const name of ['index.html','style.css','app.js'])await copyFile(`web/${name}`,`dist/${name}`);
+for(const name of ['index.html','style.css','app.js','practice.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
 await copyFile('assets/resources/articles.json','dist/articles.json');
 await writeFile('dist/session.js',stripTypeScriptTypes(await readFile('assets/scripts/TypingSession.ts','utf8')));
 await writeFile('dist/.nojekyll','');
@@ -9,3 +9,5 @@ console.log('Built dist/ with shared TypingSession and articles.');
 const {execFileSync}=await import('node:child_process');
 execFileSync(process.execPath,['--check','dist/app.js'],{stdio:'inherit'});
 execFileSync(process.execPath,['--check','dist/session.js'],{stdio:'inherit'});
+
+execFileSync(process.execPath,['--check','dist/practice.js'],{stdio:'inherit'});

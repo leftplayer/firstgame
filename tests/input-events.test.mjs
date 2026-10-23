@@ -19,7 +19,7 @@ test('English composing word preserves previously committed prefix',()=>{
  const {context,handlers,calls}=setup('en');context.input.value='hello ';context.input.selectionStart=6;context.input.selectionEnd=6;
  handlers.compositionstart();handlers.compositionupdate({data:'w'});assert.equal(calls[0].value,'hello w');
 });
-test('Chinese pinyin remains preview until commit',()=>{
- const {context,handlers,calls,pending}=setup('zh');handlers.compositionstart();handlers.compositionupdate({data:'ni'});assert.deepEqual(pending,['ni']);assert.equal(calls.length,0);context.input.value='你';handlers.compositionend();assert.equal(calls[0].value,'你');
+test('Chinese pinyin letters apply immediately without selecting a Chinese candidate',()=>{
+ const {context,handlers,calls,pending}=setup('zh');handlers.compositionstart();handlers.compositionupdate({data:'f'});handlers.compositionupdate({data:'fe'});context.input.value='feng';handlers.input({isComposing:true});assert.deepEqual(calls.map(c=>c.value),['f','fe','feng']);assert.equal(pending.length,0);
 });
 test('ordinary English key input does not wait for composition',()=>{const {context,handlers,calls}=setup('en');context.input.value='a';handlers.input({isComposing:false});assert.equal(calls[0].value,'a');});
