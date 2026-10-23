@@ -176,11 +176,11 @@ try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!respons
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
- en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典']},
- zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],misans:['MiSans','小米 MiSans'],alibaba:['AlibabaPuHuiTi','阿里巴巴普惠体'],harmony:['HarmonyOS Sans SC','鸿蒙 HarmonyOS Sans']}
+ en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典']},
+ zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],misans:['MiSans','小米 MiSans']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
-let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'mono',zh:'sans'}]));
+let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'courier',zh:'sans'}]));
 try{
  const saved=JSON.parse(localStorage.getItem('firstgame.fonts.v2')||'null');
  const legacy=JSON.parse(localStorage.getItem('firstgame.fonts.v1')||'{}');
@@ -203,17 +203,7 @@ async function loadTypeface(lang,key){
 }
 let fontTarget='body',fontDraft=structuredClone(fontChoice);
 const fontButtons=[];
-function refreshActivePreview(){
- const scope=fontTarget,names={title:'标题与按钮',body:'正文',data:'计时与成绩'};
- const en=fontOptions.en[fontChoice[scope].en],zh=fontOptions.zh[fontChoice[scope].zh];
- $('font-active-preview').dataset.scope=scope;
- $('font-active-label').textContent=names[scope]+' · '+en[0]+' / '+zh[1];
- $('font-active-en').style.fontFamily='"'+en[0]+'", sans-serif';
- $('font-active-zh').style.fontFamily='"'+zh[0]+'", sans-serif';
- $('font-active-en').textContent=scope==='data'?'12.34s · AaBb WPM':scope==='title'?'NOW TYPING · Restart':'cat and dog';
-}
 function refreshFontButtons(){
- refreshActivePreview();
  for(const b of document.querySelectorAll('[data-font-target]'))b.setAttribute('aria-pressed',String(b.dataset.fontTarget===fontTarget));
  for(const b of fontButtons)b.setAttribute('aria-pressed',String(fontDraft[fontTarget][b.dataset.fontLang]===b.dataset.fontKey));
 }
@@ -272,8 +262,7 @@ async function changeFonts(next){
   if(request!==fontRequest)return;
   fontChoice=next;
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
-  refreshActivePreview();
-  $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
+   $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
   typographyReady=true;calibrateTypography();
   requestAnimationFrame(alignActiveLine);

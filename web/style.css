@@ -115,7 +115,7 @@ header{gap:16px}
 @media(max-width:350px){header{gap:10px}.brand{font-size:20px}#restart{min-width:72px;padding:8px 10px}}
 
 /* Independently selectable typography; bundled fonts load on demand. */
-:root{--font-title-en:'Roboto Mono';--font-title-zh:'Noto Sans SC';--font-body-en:'Roboto Mono';--font-body-zh:'Noto Sans SC';--font-data-en:'Roboto Mono';--font-data-zh:'Noto Sans SC';--font-panel-height:270px;--title-font:var(--font-title-en),var(--font-title-zh),sans-serif;--body-font:var(--font-body-en),var(--font-body-zh),sans-serif;--data-font:var(--font-data-en),var(--font-data-zh),sans-serif}
+:root{--font-title-en:'Courier Prime';--font-title-zh:'Noto Sans SC';--font-body-en:'Courier Prime';--font-body-zh:'Noto Sans SC';--font-data-en:'Courier Prime';--font-data-zh:'Noto Sans SC';--font-panel-height:270px;--title-font:var(--font-title-en),var(--font-title-zh),sans-serif;--body-font:var(--font-body-en),var(--font-body-zh),sans-serif;--data-font:var(--font-data-en),var(--font-data-zh),sans-serif}
 #game,#article,#message{font-family:var(--body-font)}
 .brand,#restart,.actions #again,.actions #share{font-family:var(--title-font)}
 #timer,.result-summary .score,.result-summary .metrics{font-family:var(--data-font)}
@@ -174,9 +174,3 @@ header{gap:16px;min-height:32px}
 
 .font-credit{font:10px/1.4 Arial,sans-serif;color:#999;margin:0;flex-shrink:0}
 
-/* Keep the currently edited sample visible while browsing font choices. */
-#font-active-preview{flex-shrink:0;border-bottom:1px solid #292929;padding:0 2px 8px}
-#font-active-label{font:10px/1.5 Arial,sans-serif;color:#aaa;margin-bottom:4px}
-#font-active-en,#font-active-zh{font-size:20px;line-height:1.5;font-weight:400;color:#eee;letter-spacing:0;overflow-wrap:anywhere}
-#font-active-preview[data-scope="title"]>div:not(:first-child){font-weight:700}
-#font-active-preview[data-scope="data"]>div:not(:first-child){font-weight:700;color:#ffa124}
