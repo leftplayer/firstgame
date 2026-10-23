@@ -179,7 +179,7 @@ header{gap:16px;min-height:32px}
 .result-summary .score{color:#f2efe8;letter-spacing:-1px}
 .result-summary #whole{color:#f2efe8}
 .result-summary #fraction{color:#ffa124}
-.result-summary .score .unit{color:#888;font-weight:400;margin-left:9px;letter-spacing:0}
+.result-summary .score .unit{color:#fff;font-weight:400;margin-left:9px;letter-spacing:0}
 
 /* Collapsed debug tab stays at the side; expanded panel docks at the bottom. */
 #font-lab{top:30%;bottom:auto;left:auto;right:12px;padding:0;border:1px solid #333;border-radius:8px;max-width:calc(100% - 24px)}
