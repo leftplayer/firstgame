@@ -3,18 +3,10 @@
 /* Show IME preedit (pinyin/English prediction) before it is committed. */
 .composition{color:#ffbf69;border-bottom:1px solid #ffa124;letter-spacing:0;background:#241b0e;border-radius:3px;padding:0 3px;overflow-wrap:anywhere}
 
-/* Five fixed line boxes; the current line is always at the top. */
+/* Five fixed line boxes; the active line keeps one previous row above it. */
 #viewport{height:calc(var(--line-height)*5);--line-height:37px;overflow:hidden;mask-image:linear-gradient(to bottom,#000 0%,#000 48%,rgba(0,0,0,.65) 68%,rgba(0,0,0,.22) 89%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 48%,rgba(0,0,0,.65) 68%,rgba(0,0,0,.22) 89%,transparent 100%)}
 article{line-height:37px;padding-bottom:185px}
 .glyph{position:relative}
-.pinyin-mode #viewport{--line-height:57px}
-.pinyin-mode article{line-height:57px;padding-bottom:285px;letter-spacing:0}
-.pinyin-mode .glyph{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-start;vertical-align:top;height:57px;min-width:30px;margin-right:3px;line-height:1}
-.pinyin-mode .hanzi{font-size:21px;line-height:30px}
-.pinyin-mode .phonetic{font:12px/18px 'Courier New',monospace;min-width:24px;white-space:nowrap}
-.pinyin-mode .punctuation{min-width:13px;margin:0;font-size:21px;line-height:30px}
-.pinyin-mode #caret{vertical-align:top}
-.pinyin-mode #caret:before{top:3px;height:27px}
 #whole{font-size:clamp(64px,18vw,100px)}
 #fraction{font-size:clamp(40px,11vw,61px)}
 .score{letter-spacing:-3px}

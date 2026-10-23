@@ -9,6 +9,9 @@ export class TypingSession {
     if (!target) throw new Error('Article must not be empty');
     this.target = target.normalize('NFC');
   }
+  start(now: number): void {
+    if (this.phase === 'ready') { this.startedAt = now; this.phase = 'typing'; }
+  }
   input(value: string, now: number): void {
     if (this.phase === 'finished') return;
     const next = Array.from(value.normalize('NFC')).slice(0, Array.from(this.target).length).join('');

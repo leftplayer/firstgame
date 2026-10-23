@@ -1,11 +1,11 @@
-# 网页输入与排版
+# Web preview
 
-本轮调整作用于 GitHub Pages 的网页预览，Cocos 界面尚未同步。
+GitHub Pages builds the DOM preview; these UI changes apply to web, not the Cocos scene.
 
-- 中文保留汉字并显示拼音，目标为连续的无声调小写拼音，不输入空格或中文标点。文章读音在 web/pinyin.json 中显式配置，字数与读音数量在测试中验证。
-- 中文拼音与英文均在 compositionupdate / input 时即时校验，不等待选词。网页设置英文输入提示并关闭自动纠正；系统键盘是否显示候选栏由操作系统决定，建议使用英文键盘。
-- 中文拼音成绩与原汉字模式成绩分开比较。
-- 正文窗口固定五个行框，第 4、5 行模糊并渐隐；更多内容裁切。下一行开始输入时，正文内部滚动，使当前行置顶。末尾保留空白滚动空间。
-- 成绩整数最大 100px，小数最大 61px。
+Chinese uses original characters, including punctuation, and supports multi-character IME commits. Preedit starts the clock immediately when the browser receives a keystroke / insertion / composition update; validation waits for committed Chinese text. English preedit still updates immediately.
 
-验证：构建语法检查与 16 项自动化测试。手机 IME 与真实软键盘仍需真机验证。
+Input is accepted only through the first matching prefix. A mismatch discards that character and the rest of the batch, highlights the expected character red, and does not advance. Users can immediately type the correct replacement. No error message is shown.
+
+The viewport contains five lines. Row one stays at the top initially; afterward one previous row is retained so the active row stays second. Lower rows fade and blur. Result timer uses smaller typography.
+
+Run `npm test` and `node scripts/build-web.mjs`. Mobile native IME behavior still needs real-device verification.
