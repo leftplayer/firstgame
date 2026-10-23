@@ -165,3 +165,10 @@ header{gap:16px;min-height:32px}
 .font-preview-title{font-size:calc(var(--title-size,24px) * .583333)}
 .font-preview-body{font-size:calc(var(--body-en-size,21px) * .666667)}
 .font-preview-data{font-size:calc(14px * var(--data-scale,1))}
+
+/* Center the visible letter shapes, including fonts with asymmetric metrics. */
+#restart,.actions #again,.actions #share{display:inline-flex;align-items:center;justify-content:center;line-height:1;padding:0 8px}
+#restart{width:68px;min-width:68px;height:30px;min-height:30px}
+.actions #again,.actions #share{min-width:88px;height:36px;min-height:36px}
+#restart .button-label,.actions .button-label{display:block;margin:0;line-height:1;transform:translateY(var(--label-offset,0px));font:inherit;color:inherit}
+.brand .brand-label{translate:0 var(--title-offset,0px)}

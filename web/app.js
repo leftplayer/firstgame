@@ -176,8 +176,8 @@ try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!respons
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
- en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],w95:['W95FA','W95FA · 老 Windows'],vt323:['VT323','VT323 · 终端'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],tech:['Share Tech Mono','Share Tech Mono · 科技'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],pixelify:['Pixelify Sans','Pixelify Sans · 像素'],press:['Press Start 2P','Press Start 2P · 街机']},
- zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],kai:['LXGW WenKai TC','霞鹜文楷'],fusion:['NowTyping Fusion','缝合像素 · 12px'],bitmap:['NowTyping Bitmap','精品点阵 · 9×9'],ma:['Ma Shan Zheng','马善政 · 毛笔'],liu:['Liu Jian Mao Cao','刘建毛草 · 草书'],xiaowei:['ZCOOL XiaoWei','站酷小薇 · 文艺']}
+ en:{mono:['Roboto Mono','Roboto Mono · 等宽'],sans:['Roboto','Roboto · 无衬线'],serif:['Roboto Slab','Roboto Slab · 衬线'],plex:['IBM Plex Mono','IBM Plex Mono · 工业'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],press:['Press Start 2P','Press Start 2P · 街机']},
+ zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],kai:['LXGW WenKai TC','霞鹜文楷'],fusion:['NowTyping Fusion','缝合像素 · 12px'],ma:['Ma Shan Zheng','马善政 · 毛笔']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
 let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'mono',zh:'sans'}]));
@@ -222,7 +222,7 @@ const typeMeasure=document.createElement('canvas').getContext('2d');
 function glyphMeasure(family,weight,text){
  typeMeasure.font=weight+' 100px "'+family+'"';
  const m=typeMeasure.measureText(text);
- return {height:m.actualBoundingBoxAscent+m.actualBoundingBoxDescent,width:m.width};
+ return {height:m.actualBoundingBoxAscent+m.actualBoundingBoxDescent,width:m.width,offset:((m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)-((m.fontBoundingBoxAscent??m.actualBoundingBoxAscent)-(m.fontBoundingBoxDescent??m.actualBoundingBoxDescent)))/2};
 }
 function typeScale(scope,lang,weight,sample,target){
  const m=glyphMeasure(fontOptions[lang][fontChoice[scope][lang]][0],weight,sample);
@@ -233,9 +233,17 @@ function calibrateTypography(){
  pageStyle.setProperty('--title-size',24*typeScale('title','en',700,'H',71)+'px');
  const family=fontOptions.en[fontChoice.title.en][0];
  const label=glyphMeasure(family,500,'Restart');
- const buttonSize=Math.min(100*9/label.height,100*54/label.width);
+ const buttonSize=Math.min(100*8.5/label.height,100*50/label.width);
  pageStyle.setProperty('--restart-size',buttonSize+'px');
- pageStyle.setProperty('--action-size',Math.min(100*10.5/label.height,100*72/label.width)+'px');
+ const actionSize=Math.min(100*10/label.height,100*66/label.width);
+ pageStyle.setProperty('--action-size',actionSize+'px');
+ $('restart').style.setProperty('--label-offset',label.offset*buttonSize/100+'px');
+ for(const id of ['again','share']){
+  const m=glyphMeasure(family,500,$(id).textContent);
+  $(id).style.setProperty('--label-offset',m.offset*actionSize/100+'px');
+ }
+ const titleMetrics=glyphMeasure(family,700,'NOW TYPING');
+ pageStyle.setProperty('--title-offset',titleMetrics.offset*24*typeScale('title','en',700,'H',71)/100+'px');
  pageStyle.setProperty('--body-en-size',21*typeScale('body','en',400,'x',52)+'px');
  pageStyle.setProperty('--body-zh-size',21*typeScale('body','zh',400,'风',88)+'px');
  $('article').dataset.language=article?.language??'en';
