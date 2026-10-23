@@ -2,6 +2,29 @@ import {TypingSession,chooseArticle} from './session.js';
 const $=id=>document.getElementById(id);
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 const input=$('input');
+const pageStyle=document.documentElement.style;
+let layoutWidth=innerWidth, keyboardFocused=false, settleTimer;
+function measurePage(){
+ if(keyboardFocused)return;
+ pageStyle.setProperty('--page-height', Math.round(window.visualViewport?.height??innerHeight)+'px');
+ layoutWidth=innerWidth;
+}
+function anchorPage(){
+ // Safari can pan its visual viewport to the focused textarea. Counter that
+ // offset without resizing the game or moving the article's scroll position.
+ pageStyle.setProperty('--viewport-offset', keyboardFocused?(window.visualViewport?.offsetTop??0)+'px':'0px');
+}
+measurePage();
+if(navigator.virtualKeyboard)navigator.virtualKeyboard.overlaysContent=true;
+input.addEventListener('focus',()=>{keyboardFocused=true;clearTimeout(settleTimer);anchorPage();});
+input.addEventListener('blur',()=>{keyboardFocused=false;anchorPage();clearTimeout(settleTimer);settleTimer=setTimeout(measurePage,450);});
+window.visualViewport?.addEventListener('resize',()=>{anchorPage();if(!keyboardFocused){clearTimeout(settleTimer);settleTimer=setTimeout(measurePage,450);}});
+window.visualViewport?.addEventListener('scroll',anchorPage);
+window.addEventListener('resize',()=>{
+ if(Math.abs(innerWidth-layoutWidth)>60){input.blur();layoutWidth=innerWidth;}
+ if(!keyboardFocused){clearTimeout(settleTimer);settleTimer=setTimeout(measurePage,450);}
+});
+
 function restart(selected){
  input.blur();article=selected??chooseArticle(articles,article?.id);session=new TypingSession(article.text);completed=false;
  input.value='';input.maxLength=article.text.length;$('timer').textContent='0';$('result').hidden=true;$('game').classList.remove('finished');$('article').replaceChildren();$('viewport').scrollTop=0;$('status').textContent='';
@@ -9,7 +32,7 @@ function restart(selected){
  caret=document.createElement('span');caret.id='caret';$('article').prepend(caret);
  const url=new URL(location.href);url.searchParams.set('article',article.id);history.replaceState(null,'',url);
 }
-function focus(){if(!session||completed)return;input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
+function focus(){if(!session||completed)return;measurePage();input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
 function accept(){
  if(!session||completed||composing)return;session.input(input.value,Date.now());
  session.states.forEach((s,i)=>spans[i].className=s);
