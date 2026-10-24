@@ -211,7 +211,6 @@ header{gap:16px;min-height:32px}
 #game.font-debug-open #message{position:static;margin:0;flex:none}
 #game.font-debug-open #message:empty{display:none}
 
-.debug-page-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex-shrink:0}
 #font-note[hidden]{display:none}
 
 /* Fixed-height wordmark slot avoids shifting the timer when comparing artwork. */
@@ -220,7 +219,6 @@ header{min-height:58px}
 .brand .brand-label[hidden],#brand-image[hidden]{display:none}
 #brand-image{display:block;width:210px;max-width:100%;height:38px;object-fit:contain;object-position:left center}
 .brand[data-brand-style="paper"] #brand-image{width:168px;height:58px}
-.brand-style-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:12px}
 
 /* Compact masthead: icon artwork and outlined title share a 24px visible height. */
 header{min-height:32px;gap:12px;margin-top:8px;margin-bottom:24px}

@@ -192,7 +192,7 @@ try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!respons
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
  en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],jetbrains:['JetBrains Mono','JetBrains Mono'],geist:['Geist','Geist']},
- zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],misans:['MiSans','小米 MiSans']}
+ zh:{sans:['Noto Sans SC','思源黑体']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
 let fontChoice=Object.fromEntries(fontScopes.map(scope=>[scope,{en:'courier',zh:'sans'}]));
@@ -222,7 +222,7 @@ function refreshFontButtons(){
  for(const b of document.querySelectorAll('[data-font-target]'))b.setAttribute('aria-pressed',String(b.dataset.fontTarget===fontTarget));
  for(const b of fontButtons)b.setAttribute('aria-pressed',String(fontDraft[fontTarget][b.dataset.fontLang]===b.dataset.fontKey));
 }
-for(const lang of fontLangs)for(const [key,[,label]] of Object.entries(fontOptions[lang])){
+for(const lang of ['en'])for(const [key,[,label]] of Object.entries(fontOptions[lang])){
  const button=document.createElement('button');button.type='button';button.dataset.fontLang=lang;button.dataset.fontKey=key;
  button.textContent=label;button.title=label;button.setAttribute('aria-pressed','false');
  button.addEventListener('click',()=>{feedback.button();fontDraft[fontTarget][lang]=key;refreshFontButtons();changeFonts(structuredClone(fontDraft));});
@@ -347,25 +347,12 @@ function switchDebugPage(page){
 }
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
 
-// Reference artwork titles are independent of the font experiment settings.
-const brandAssets={cursor:'./brand/title-cursor.svg',overprint:'./brand/title-overprint-traced.svg',unfinished:'./brand/title-unfinished-traced.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark-traced.svg'};
-function setBrandStyle(style){
- if(style!=='text'&&!Object.hasOwn(brandAssets,style))style='text';
- const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label'),image=$('brand-image');
- const artwork=style!=='text';
- brand.classList.toggle('has-image',artwork);brand.dataset.brandStyle=style;
- label.hidden=artwork;image.hidden=!artwork;
- if(artwork)image.src=brandAssets[style];else image.removeAttribute('src');
- for(const button of document.querySelectorAll('[data-brand-style]'))button.setAttribute('aria-pressed',String(button.dataset.brandStyle===style));
- try{localStorage.setItem('firstgame.brand.v1',style);}catch{}
- fitBrand();
-}
-for(const button of document.querySelectorAll('[data-brand-style]')){
- button.addEventListener('pointerdown',e=>{if(e.button===0)e.preventDefault();});
- button.addEventListener('click',()=>{feedback.button();setBrandStyle(button.dataset.brandStyle);});
-}
+// Approved wordmark is fixed, independent of old debug preferences.
 $('brand-image').addEventListener('load',fitBrand);
 new ResizeObserver(fitBrand).observe(document.querySelector('.brand'));
-$('brand-image').addEventListener('error',()=>setBrandStyle('text'));
-let savedBrand='unfinished';try{savedBrand=localStorage.getItem('firstgame.brand.v1')||'unfinished';}catch{}
-setBrandStyle(savedBrand);
+$('brand-image').addEventListener('error',()=>{
+ const brand=document.querySelector('.brand');brand.classList.remove('has-image');
+ brand.querySelector('.brand-label').hidden=false;$('brand-image').hidden=true;fitBrand();
+});
+try{localStorage.removeItem('firstgame.brand.v1');}catch{}
+fitBrand();
