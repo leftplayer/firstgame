@@ -30,6 +30,21 @@
     "sha256": "4a46d9b9b78e3bf58cc6b72b861dfb27341909b2dc3ecbbc5bb40a2106776df3"
   },
   {
+    "file": "misans-cs.246e8ea5197d9c54.6.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.246e8ea5197d9c54.6.woff2",
+    "sha256": "20b8661dc4151ed575acf201dc9710a858a92cf426a557d30e4384c8e4a368f6"
+  },
+  {
+    "file": "misans-cs.4ff84f9234f03a2b.7.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4ff84f9234f03a2b.7.woff2",
+    "sha256": "c8ea76c423b19448fa9cdb4e9f21567affcaab1d5c7fa289e66ed226606cf505"
+  },
+  {
+    "file": "misans-cs.e2f46f4ad5ed6851.8.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.e2f46f4ad5ed6851.8.woff2",
+    "sha256": "96075504541c79c3eead98e7ff8d2e66706666138c2acdf9caa0d44056958aac"
+  },
+  {
     "file": "misans-cs.4c99c20b51689926.9.woff2",
     "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4c99c20b51689926.9.woff2",
     "sha256": "a8a35c5e298eedef1f188ae5907c5eb50c4b5929845d1d9ff568d1436e4b2db4"
@@ -38,5 +53,175 @@
     "file": "misans-cs.5ce26b64a1674f60.10.woff2",
     "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.5ce26b64a1674f60.10.woff2",
     "sha256": "c1eecdcff7865649a619267d7e867f4008fab6db11095616682922a5e91e58aa"
+  },
+  {
+    "file": "misans-cs.8ee276e30de7c0fd.11.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.8ee276e30de7c0fd.11.woff2",
+    "sha256": "22ec3a7f1e26e04be352d755fccb8bb493ceb9590c1e6ea9983c7dce14876a48"
+  },
+  {
+    "file": "misans-cs.301b77c9b2d5cbb6.12.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.301b77c9b2d5cbb6.12.woff2",
+    "sha256": "1877854d9fcbd02680bcba2e8145f1f383b1059350a80f44e0fbbe5e734f600b"
+  },
+  {
+    "file": "misans-cs.4637e6312480205e.13.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.4637e6312480205e.13.woff2",
+    "sha256": "948d28489eacc78baf063f0d3fb0af0346f0824c126637ef684df9d042d907db"
+  },
+  {
+    "file": "misans-cs.ae598ee92e49ae65.14.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/400/cs.ae598ee92e49ae65.14.woff2",
+    "sha256": "4f51890b784e64984de2bc5abfc3f0c4cabb184d29266a0bdba616d95f82785f"
+  },
+  {
+    "file": "misans-cs.56f6e9e9ecb6662a.0.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.56f6e9e9ecb6662a.0.woff2",
+    "sha256": "bd0376b1e4a2fcdc7fa90fb41b99a10fc337b4e407412807ddeee36890176a6b"
+  },
+  {
+    "file": "misans-cs.9d94f8221d93f686.1.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.9d94f8221d93f686.1.woff2",
+    "sha256": "a9aab4b6a377020729984c09163eec854f15bfa517eab872929aaa6361a013de"
+  },
+  {
+    "file": "misans-cs.41fde68a40cc7d65.2.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.41fde68a40cc7d65.2.woff2",
+    "sha256": "c8eaf7881e6264287c0dacbff71dd3a648a90aca1f0ecb5f583c1eed9e95a0b6"
+  },
+  {
+    "file": "misans-cs.e7cb8384c84b52e6.3.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.e7cb8384c84b52e6.3.woff2",
+    "sha256": "7218cdc6379d91003024a5237733738dac784a6738c1898920f19a41d14d9131"
+  },
+  {
+    "file": "misans-cs.9b3f0ca0431a350d.4.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.9b3f0ca0431a350d.4.woff2",
+    "sha256": "fd608ec97c3d13a141b4f763988fa8fe5cc1d18418b398f1ac03ff9049ee6c83"
+  },
+  {
+    "file": "misans-cs.7abbb995e3f09335.5.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.7abbb995e3f09335.5.woff2",
+    "sha256": "874a5d65eb7865a648873fc0fba3a690aefc3a9e2380717837473142b5dcf909"
+  },
+  {
+    "file": "misans-cs.958c6d3759ef0d86.6.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.958c6d3759ef0d86.6.woff2",
+    "sha256": "28995696d8c377e0afd0712fc34b5b923c2fe4ae00d1bdd976ab566ebf1d6acb"
+  },
+  {
+    "file": "misans-cs.80dfbb815edab15c.7.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.80dfbb815edab15c.7.woff2",
+    "sha256": "a2cb89482b8f1fcee5bd7093c07818a4df856665a5b920a3c676a2146d6e526d"
+  },
+  {
+    "file": "misans-cs.0b0ba909e5f12f26.8.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.0b0ba909e5f12f26.8.woff2",
+    "sha256": "3217f29024cd3be68f13c98ec0ee5d99f3fd4f8a7d9d10142b9bf6f22c26ab2c"
+  },
+  {
+    "file": "misans-cs.ddc21e4e040aa09a.9.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.ddc21e4e040aa09a.9.woff2",
+    "sha256": "d61040411a37341a16a0c2905e97175ab85137b5e3c29292bd0cd5308278b0c9"
+  },
+  {
+    "file": "misans-cs.7bdb5ef553fb6613.10.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.7bdb5ef553fb6613.10.woff2",
+    "sha256": "e8a1200b720e808b4c69123eb856a1ea6724569ed5320f61f40a564122944b83"
+  },
+  {
+    "file": "misans-cs.27a6ac56cfad2de3.11.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.27a6ac56cfad2de3.11.woff2",
+    "sha256": "7447e91ac87970b17feac6cd410741b7557d60a6c0f4e1a7bb906c55758b9aef"
+  },
+  {
+    "file": "misans-cs.832f5b3e8e0783f7.12.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.832f5b3e8e0783f7.12.woff2",
+    "sha256": "41f6087b5705f4e10df845e18f0f48c674a88b0c373687b38b1fc774daf8fb08"
+  },
+  {
+    "file": "misans-cs.ee40b5dffe444319.13.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.ee40b5dffe444319.13.woff2",
+    "sha256": "4f7202f357a3da197c9fca24676e17580fe52f270f01f497e21eb828935920d4"
+  },
+  {
+    "file": "misans-cs.9adb7c1312f4cb2a.14.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/600/cs.9adb7c1312f4cb2a.14.woff2",
+    "sha256": "6c06d5fc55bc2f2916741b4cf6c549c3f57c062cf6877b5e4ff2043fa820c59e"
+  },
+  {
+    "file": "misans-cs.56f6e9e9ecb6662a.0.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.56f6e9e9ecb6662a.0.woff2",
+    "sha256": "bd0376b1e4a2fcdc7fa90fb41b99a10fc337b4e407412807ddeee36890176a6b"
+  },
+  {
+    "file": "misans-cs.9d94f8221d93f686.1.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.9d94f8221d93f686.1.woff2",
+    "sha256": "a9aab4b6a377020729984c09163eec854f15bfa517eab872929aaa6361a013de"
+  },
+  {
+    "file": "misans-cs.41fde68a40cc7d65.2.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.41fde68a40cc7d65.2.woff2",
+    "sha256": "c8eaf7881e6264287c0dacbff71dd3a648a90aca1f0ecb5f583c1eed9e95a0b6"
+  },
+  {
+    "file": "misans-cs.e7cb8384c84b52e6.3.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.e7cb8384c84b52e6.3.woff2",
+    "sha256": "7218cdc6379d91003024a5237733738dac784a6738c1898920f19a41d14d9131"
+  },
+  {
+    "file": "misans-cs.9b3f0ca0431a350d.4.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.9b3f0ca0431a350d.4.woff2",
+    "sha256": "fd608ec97c3d13a141b4f763988fa8fe5cc1d18418b398f1ac03ff9049ee6c83"
+  },
+  {
+    "file": "misans-cs.7abbb995e3f09335.5.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.7abbb995e3f09335.5.woff2",
+    "sha256": "874a5d65eb7865a648873fc0fba3a690aefc3a9e2380717837473142b5dcf909"
+  },
+  {
+    "file": "misans-cs.958c6d3759ef0d86.6.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.958c6d3759ef0d86.6.woff2",
+    "sha256": "28995696d8c377e0afd0712fc34b5b923c2fe4ae00d1bdd976ab566ebf1d6acb"
+  },
+  {
+    "file": "misans-cs.80dfbb815edab15c.7.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.80dfbb815edab15c.7.woff2",
+    "sha256": "a2cb89482b8f1fcee5bd7093c07818a4df856665a5b920a3c676a2146d6e526d"
+  },
+  {
+    "file": "misans-cs.0b0ba909e5f12f26.8.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.0b0ba909e5f12f26.8.woff2",
+    "sha256": "3217f29024cd3be68f13c98ec0ee5d99f3fd4f8a7d9d10142b9bf6f22c26ab2c"
+  },
+  {
+    "file": "misans-cs.ddc21e4e040aa09a.9.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.ddc21e4e040aa09a.9.woff2",
+    "sha256": "d61040411a37341a16a0c2905e97175ab85137b5e3c29292bd0cd5308278b0c9"
+  },
+  {
+    "file": "misans-cs.7bdb5ef553fb6613.10.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.7bdb5ef553fb6613.10.woff2",
+    "sha256": "e8a1200b720e808b4c69123eb856a1ea6724569ed5320f61f40a564122944b83"
+  },
+  {
+    "file": "misans-cs.27a6ac56cfad2de3.11.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.27a6ac56cfad2de3.11.woff2",
+    "sha256": "7447e91ac87970b17feac6cd410741b7557d60a6c0f4e1a7bb906c55758b9aef"
+  },
+  {
+    "file": "misans-cs.832f5b3e8e0783f7.12.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.832f5b3e8e0783f7.12.woff2",
+    "sha256": "41f6087b5705f4e10df845e18f0f48c674a88b0c373687b38b1fc774daf8fb08"
+  },
+  {
+    "file": "misans-cs.ee40b5dffe444319.13.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.ee40b5dffe444319.13.woff2",
+    "sha256": "4f7202f357a3da197c9fca24676e17580fe52f270f01f497e21eb828935920d4"
+  },
+  {
+    "file": "misans-cs.9adb7c1312f4cb2a.14.woff2",
+    "url": "https://cdn-file.hyperos.mi.com/mi-font-service/misans/650/cs.9adb7c1312f4cb2a.14.woff2",
+    "sha256": "6c06d5fc55bc2f2916741b4cf6c549c3f57c062cf6877b5e4ff2043fa820c59e"
   }
 ]

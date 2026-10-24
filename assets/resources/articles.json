@@ -39,5 +39,29 @@
     "id": "en-test-short",
     "language": "en",
     "text": "cat and dog sun and sky bird"
+  },
+  {
+    "id": "zh-chushibiao",
+    "language": "zh",
+    "source": "出师表 · 诸葛亮",
+    "text": "臣本布衣，躬耕于南阳，苟全性命于乱世，不求闻达于诸侯。"
+  },
+  {
+    "id": "zh-maowu",
+    "language": "zh",
+    "source": "茅屋为秋风所破歌 · 杜甫",
+    "text": "南村群童欺我老无力，忍能对面为盗贼。公然抱茅入竹去，唇焦口燥呼不得，归来倚杖自叹息。"
+  },
+  {
+    "id": "zh-loushiming",
+    "language": "zh",
+    "source": "陋室铭 · 刘禹锡",
+    "text": "山不在高，有仙则名。水不在深，有龙则灵。斯是陋室，惟吾德馨。"
+  },
+  {
+    "id": "zh-mengzi",
+    "language": "zh",
+    "source": "孟子·告子下",
+    "text": "天将降大任于是人也，必先苦其心志，劳其筋骨，饿其体肤，空乏其身，行拂乱其所为。"
   }
 ]
