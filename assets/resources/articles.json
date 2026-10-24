@@ -15,7 +15,7 @@
     "id": "en-friends-real-world",
     "language": "en",
     "source": "Friends · Monica Geller",
-    "text": "Welcome to the real world. It sucks. You're gonna love it."
+    "text": "Welcome to the real world. It sucks. You're gonna love it!"
   },
   {
     "id": "en-big-bang-tested",
@@ -63,5 +63,47 @@
     "language": "zh",
     "source": "孟子·告子下",
     "text": "天将降大任于是人也，必先苦其心志，劳其筋骨，饿其体肤，空乏其身，行拂乱其所为。"
+  },
+  {
+    "id": "en-friends-fill-the-void",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "You can eat and eat, but nothing will ever fill the void."
+  },
+  {
+    "id": "en-friends-always-friends",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "Lovers come and go in life, but friends are always friends."
+  },
+  {
+    "id": "en-friends-come-back",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "Sometimes I may be away longer, I like this. But I'll still always come back, like this."
+  },
+  {
+    "id": "en-friends-dont-want",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "I wish I could, but I don't want to."
+  },
+  {
+    "id": "en-friends-get-better",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "I don't get older. I just get better."
+  },
+  {
+    "id": "en-friends-monica-proposal",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "Chandler... In all my life... I never thought I would be so lucky. As to... fall in love with my best... my best... There's a reason why girls don't do this!"
+  },
+  {
+    "id": "en-friends-chandler-proposal",
+    "language": "en",
+    "source": "Friends · 用户提供文本",
+    "text": "Okay! Okay! Okay! Oh God, I thought... Wait a minute, I-I can do this. I thought that it mattered what I said or where I said it. Then I realized the only thing that matters is that you, you make me happier than I ever thought I could be. And if you'll let me, I will spend the rest of my life trying to make you feel the same way. Monica, will you marry me?"
   }
 ]
