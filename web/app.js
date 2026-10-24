@@ -265,6 +265,7 @@ function calibrateTypography(){
 }
 function fitBrand(){
  const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label');
+ if(brand.classList.contains('has-image'))return;
  label.style.transform='';
  // On very narrow screens constrain only width, never shrink title height.
  const width=label.getBoundingClientRect().width;
@@ -333,3 +334,24 @@ function switchDebugPage(page){
  updateFontPanelLayout();
 }
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
+
+// Reference artwork titles are independent of the font experiment settings.
+const brandAssets={unfinished:'./brand/title-unfinished.png',paper:'./brand/title-paper.png',mark:'./brand/title-mark.png'};
+function setBrandStyle(style){
+ if(style!=='text'&&!Object.hasOwn(brandAssets,style))style='text';
+ const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label'),image=$('brand-image');
+ const artwork=style!=='text';
+ brand.classList.toggle('has-image',artwork);brand.dataset.brandStyle=style;
+ label.hidden=artwork;image.hidden=!artwork;
+ if(artwork)image.src=brandAssets[style];else image.removeAttribute('src');
+ for(const button of document.querySelectorAll('[data-brand-style]'))button.setAttribute('aria-pressed',String(button.dataset.brandStyle===style));
+ try{localStorage.setItem('firstgame.brand.v1',style);}catch{}
+ fitBrand();
+}
+for(const button of document.querySelectorAll('[data-brand-style]')){
+ button.addEventListener('pointerdown',e=>{if(e.button===0)e.preventDefault();});
+ button.addEventListener('click',()=>{feedback.button();setBrandStyle(button.dataset.brandStyle);});
+}
+$('brand-image').addEventListener('error',()=>setBrandStyle('text'));
+let savedBrand='text';try{savedBrand=localStorage.getItem('firstgame.brand.v1')||'text';}catch{}
+setBrandStyle(savedBrand);

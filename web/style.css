@@ -213,3 +213,11 @@ header{gap:16px;min-height:32px}
 
 .debug-page-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex-shrink:0}
 #font-note[hidden]{display:none}
+
+/* Fixed-height wordmark slot avoids shifting the timer when comparing artwork. */
+header{min-height:58px}
+.brand.has-image{display:flex;align-items:center;height:58px;line-height:normal}
+.brand .brand-label[hidden],#brand-image[hidden]{display:none}
+#brand-image{display:block;width:210px;max-width:100%;height:38px;object-fit:contain;object-position:left center}
+.brand[data-brand-style="paper"] #brand-image{width:168px;height:58px}
+.brand-style-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:12px}
