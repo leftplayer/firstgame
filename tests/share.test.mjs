@@ -26,16 +26,9 @@ test('cancelling system sharing does not report an error or copy content',async(
  await nodes.share.onclick();assert.equal(nodes.message.textContent,'');
 });
 
-test('Samsung capture shows only branding with a distinct page description, then restores on cancel',async()=>{
- const surface={hidden:true},classes=new Set(),events=[];
- const document={title:'成绩标题',visibilityState:'visible',getElementById:()=>surface,documentElement:{classList:{add:x=>classes.add(x),remove:x=>classes.delete(x)}}};
- const navigator={userAgent:'SamsungBrowser/28.0',share:async data=>{assert.equal(surface.hidden,false);assert.equal(document.title,'头号打字员 · 来打同一篇，比比速度。');assert.equal(data.title,'我只用了3.34秒，快来试试吧！');assert.equal(events.length,2);throw {name:'AbortError'};}};
- const share=runInNewContext(source+';shareViaBrowser',{document,navigator,requestAnimationFrame:fn=>{events.push('paint');fn();}});
- await assert.rejects(share({title:'我只用了3.34秒，快来试试吧！'}),e=>e.name==='AbortError');
- assert.equal(surface.hidden,true);assert.equal(document.title,'成绩标题');assert.equal(classes.size,0);
-});
-test('other browsers retain a direct native share call',async()=>{
- let count=0;const data={title:'test'};
- const share=runInNewContext(source+';shareViaBrowser',{navigator:{userAgent:'Chrome',share:async value=>{assert.equal(value,data);count++;}}});
- await share(data);assert.equal(count,1);
+test('Samsung sharing does not change the page or wait for a screenshot',async()=>{
+ let calls=0;const data={title:'邀请',text:'描述',url:'https://example.com/'};
+ const share=runInNewContext(source+';shareViaBrowser',{navigator:{userAgent:'SamsungBrowser/28.0',share:value=>{assert.equal(value,data);calls++;return Promise.resolve();}}});
+ await share(data);assert.equal(calls,1);
+ const html=readFileSync(new URL('../web/index.html',import.meta.url),'utf8');assert.ok(!html.includes('share-capture'));assert.ok(!html.includes('share-panel'));assert.ok(html.includes('property="og:image" content="https://leftplayer.github.io/firstgame/brand/typing-icon.png"'));
 });

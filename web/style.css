@@ -240,7 +240,3 @@ header{min-height:32px;gap:12px;margin-top:8px;margin-bottom:24px}
 
 
 
-#share-capture{position:fixed;inset:0;z-index:2147483647;background:#000;display:flex;align-items:center;justify-content:center;pointer-events:none}
-#share-capture[hidden]{display:none}
-#share-capture img{display:block;width:96vw;height:auto;max-height:96vh;object-fit:contain}
-.sharing-capture #game{visibility:hidden}
