@@ -38,7 +38,7 @@ test('per-key effects skip duplicate IME events and spaces, animate errors, and 
  const feedback=new TypingFeedback(),effects=[];
  const nodes=['a',' ','x'].map(textContent=>({textContent,animate(frames){const a={frames,cancel(){this.cancelled=true;}};effects.push(a);return a;}}));
  feedback.strike([],['a',' ','x'],['correct','correct','wrong'],nodes);
- assert.equal(effects.length,2);assert.ok(effects[1].frames.some(f=>f.left==='-3px'));
+ assert.equal(effects.length,2);assert.ok(effects[1].frames.some(f=>f.transform==='translateX(-3px)'));
  feedback.strike(['a',' ','x'],['a',' ','x'],['correct','correct','wrong'],nodes);assert.equal(effects.length,2);
  feedback.reset();assert.ok(effects.every(a=>a.cancelled));assert.equal(feedback.strikes.size,0);
 });
@@ -52,5 +52,5 @@ test('batch typing and streak glow never move glyphs vertically',()=>{
 test('single correct character bounces and returns to its baseline',()=>{
  globalThis.matchMedia=()=>({matches:false});const feedback=new TypingFeedback(),frames=[];
  feedback.strike([],['a'],['correct'],[{textContent:'a',animate(f){frames.push(...f);return {cancel(){}};}}]);
- assert.equal(frames[0].top,'0px');assert.ok(frames.some(f=>f.top==='-4px'));assert.equal(frames.at(-1).top,'0px');
+ assert.equal(frames[0].transform,'translateY(0px)');assert.ok(frames.some(f=>f.transform==='translateY(-4px)'));assert.equal(frames.at(-1).transform,'translateY(0px)');
 });

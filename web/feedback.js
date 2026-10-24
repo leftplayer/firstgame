@@ -25,6 +25,7 @@ export class TypingFeedback {
  reset(){this.strikes.forEach(a=>a.cancel());this.strikes.clear();this.comboMarks.clear();this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];}
  strike(previous,current,states,nodes){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // Transform only: top/left would change offsetTop/offsetLeft used by line tracking.
   // Only a single changed character bounces; batch/IME commits stay still.
   const single=current.filter((char,i)=>char!==previous[i]&&!/\s/.test(char)).length===1;
   for(let i=Math.max(0,current.length-12);i<current.length;i++){
@@ -34,13 +35,13 @@ export class TypingFeedback {
    if(this.strikes.size>=24){const [old,a]=this.strikes.entries().next().value;a.cancel();this.strikes.delete(old);}
    const wrong=states[i]==='wrong';
    const animation=node.animate(wrong?[
-    {left:'0px',color:'#ff6363',textShadow:'0 0 10px #ff544499'},
-    {left:'-3px',offset:.25},{left:'3px',offset:.5},{left:'-1px',offset:.75},
-    {left:'0px',color:'#e17b7b',textShadow:'none'}
+    {transform:'translateX(0px)',color:'#ff6363',textShadow:'0 0 10px #ff544499'},
+    {transform:'translateX(-3px)',offset:.25},{transform:'translateX(3px)',offset:.5},{transform:'translateX(-1px)',offset:.75},
+    {transform:'translateX(0px)',color:'#e17b7b',textShadow:'none'}
    ]:[
-    {...(single?{top:'0px'}:{}),color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
-    {...(single?{top:'-4px'}:{}),color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
-    {...(single?{top:'0px'}:{}),color:'#eee',textShadow:'none'}
+    {...(single?{transform:'translateY(0px)'}:{}),color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
+    {...(single?{transform:'translateY(-4px)'}:{}),color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
+    {...(single?{transform:'translateY(0px)'}:{}),color:'#eee',textShadow:'none'}
    ],{duration:wrong?260:300,easing:'ease-out'});
    this.strikes.set(node,animation);
    animation.onfinish=()=>{if(this.strikes.get(node)===animation)this.strikes.delete(node);};
