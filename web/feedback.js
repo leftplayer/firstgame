@@ -1,6 +1,6 @@
 // Small synthesized clicks; no external audio downloads.
 export class TypingFeedback {
- constructor(){this.audio=null;this.lastTap=-Infinity;this.lastError=-Infinity;this.tapTimer=null;this.lastSpace=-Infinity;this.comboMarks=new Set();this.comboAnimations=[];}
+ constructor(){this.audio=null;this.lastTap=-Infinity;this.lastError=-Infinity;this.tapTimer=null;this.lastSpace=-Infinity;this.comboMarks=new Set();this.comboAnimations=[];this.strikes=new Map();}
  unlock(){
   try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;this.audio??=new Audio();if(this.audio.state==='suspended')return this.audio.resume().catch(()=>{});}catch{}
  }
@@ -22,7 +22,29 @@ export class TypingFeedback {
   const now=performance.now();if(now-this.lastSpace<45)return;this.lastSpace=now;
   this.unlock();this.tone(240,.07,0,.045,'sine');this.tone(480,.035,.018,.025,'triangle');
  }
- reset(){this.comboMarks.clear();this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];}
+ reset(){this.strikes.forEach(a=>a.cancel());this.strikes.clear();this.comboMarks.clear();this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];}
+ strike(previous,current,states,nodes){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // Animate committed/newly changed glyphs; repeated IME events do not replay.
+  for(let i=Math.max(0,current.length-12);i<current.length;i++){
+   if(current[i]===previous[i]||/\s/.test(current[i]))continue;
+   const node=nodes[i];if(!node)continue;
+   this.strikes.get(node)?.cancel();
+   if(this.strikes.size>=24){const [old,a]=this.strikes.entries().next().value;a.cancel();this.strikes.delete(old);}
+   const wrong=states[i]==='wrong';
+   const animation=node.animate(wrong?[
+    {left:'0px',color:'#ff6363',textShadow:'0 0 10px #ff544499'},
+    {left:'-3px',offset:.25},{left:'3px',offset:.5},{left:'-1px',offset:.75},
+    {left:'0px',color:'#e17b7b',textShadow:'none'}
+   ]:[
+    {top:'3px',color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
+    {top:'-5px',color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
+    {top:'0px',color:'#eee',textShadow:'none'}
+   ],{duration:wrong?260:300,easing:'ease-out'});
+   this.strikes.set(node,animation);
+   animation.onfinish=()=>{if(this.strikes.get(node)===animation)this.strikes.delete(node);};
+  }
+ }
  combo(previous,current,states,nodes){
   let run=0,hit=-1;
   for(let i=0;i<current.length;i++){
@@ -37,12 +59,13 @@ export class TypingFeedback {
   this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];
   nodes.slice(Math.max(0,hit-9),hit+1).forEach((node,i)=>{
    if(states[Math.max(0,hit-9)+i]!=='correct'||!node.textContent.trim())return;
+   this.strikes.get(node)?.cancel();this.strikes.delete(node);
    this.comboAnimations.push(node.animate([
     {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'},
-    {color:'#ffb64d',textShadow:'0 0 12px #ff941acc',top:'-4px',offset:.32},
-    {color:'#fff0d6',textShadow:'0 0 5px #ff941a66',top:'1px',offset:.65},
+    {color:'#ffb64d',textShadow:'0 0 20px #ff941a',top:'-8px',offset:.32},
+    {color:'#fff0d6',textShadow:'0 0 10px #ff941aaa',top:'1px',offset:.65},
     {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'}
-   ],{duration:440,delay:i*18,easing:'ease-out'}));
+   ],{duration:580,delay:i*22,easing:'ease-out'}));
   });
  }
  error(){

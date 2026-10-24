@@ -102,6 +102,7 @@ function accept(value=input.value, provisional=false){
  if(hasError)feedback.error();
  else if(current.some((char,i)=>char===' '&&char!==previous[i]))feedback.space();
  states.forEach((state,i)=>spans[i].className='glyph '+state);
+ feedback.strike(previous,current,states,spans);
  feedback.combo(previous,current,states,spans);
  alignActiveLine();
  $('status').textContent='';
@@ -188,7 +189,7 @@ try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!respons
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
- en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典']},
+ en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],jetbrains:['JetBrains Mono','JetBrains Mono'],geist:['Geist','Geist'],press:['Press Start 2P','Press Start 2P · 像素']},
  zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],misans:['MiSans','小米 MiSans']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
@@ -202,7 +203,7 @@ const fontLoads=new Map();let fontRequest=0;
 async function loadTypeface(lang,key){
  const id=lang+'-'+key;
  if(!fontLoads.has(id))fontLoads.set(id,(async()=>{
-  const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css?v=quote-fonts-2';
+  const link=document.createElement('link');link.rel='stylesheet';link.href='./fonts/'+id+'.css?v=font-options-3';
   try{
    await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>reject(Error('font stylesheet'));document.head.append(link);});
    const family=fontOptions[lang][key][0],sample=lang==='zh'?articles.filter(a=>a.language==='zh').map(a=>a.text).join('')+'风穿过窗边正在打字':'Now typing';
@@ -273,7 +274,6 @@ async function changeFonts(next){
   await Promise.all(fontScopes.flatMap(scope=>fontLangs.map(lang=>loadTypeface(lang,next[scope][lang]))));
   if(request!==fontRequest)return;
   fontChoice=next;
-  pageStyle.setProperty('--result-tracking',next.data.en==='serif'?'0.5px':'normal');
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
    $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}

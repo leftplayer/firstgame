@@ -33,3 +33,12 @@ test('space sound cancels generic delayed click and repeated space events are th
  feedback.tapTimer=setTimeout(()=>assert.fail('generic click should be cancelled'),10);
  feedback.space();feedback.space();assert.equal(tones.length,2);assert.equal(tones[0][0],240);
 });
+test('per-key effects skip duplicate IME events and spaces, animate errors, and clear on restart',()=>{
+ globalThis.matchMedia=()=>({matches:false});
+ const feedback=new TypingFeedback(),effects=[];
+ const nodes=['a',' ','x'].map(textContent=>({textContent,animate(frames){const a={frames,cancel(){this.cancelled=true;}};effects.push(a);return a;}}));
+ feedback.strike([],['a',' ','x'],['correct','correct','wrong'],nodes);
+ assert.equal(effects.length,2);assert.ok(effects[1].frames.some(f=>f.left==='-3px'));
+ feedback.strike(['a',' ','x'],['a',' ','x'],['correct','correct','wrong'],nodes);assert.equal(effects.length,2);
+ feedback.reset();assert.ok(effects.every(a=>a.cancelled));assert.equal(feedback.strikes.size,0);
+});
