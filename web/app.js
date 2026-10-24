@@ -269,7 +269,8 @@ function fitBrand(){
  label.style.transform='';
  // On very narrow screens constrain only width, never shrink title height.
  const width=label.getBoundingClientRect().width;
- if(width>brand.clientWidth)label.style.transform='scaleX('+(brand.clientWidth/width)+')';
+ const available=brand.clientWidth-44;
+ if(width>available)label.style.transform='scaleX('+Math.max(.1,available/width)+')';
 }
 async function changeFonts(next){
  const request=++fontRequest;$('font-note').textContent='正在加载字体…';
@@ -336,7 +337,7 @@ function switchDebugPage(page){
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
 
 // Reference artwork titles are independent of the font experiment settings.
-const brandAssets={unfinished:'./brand/title-unfinished.png',paper:'./brand/title-paper.png',mark:'./brand/title-mark.png'};
+const brandAssets={unfinished:'./brand/title-unfinished.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark.svg'};
 function setBrandStyle(style){
  if(style!=='text'&&!Object.hasOwn(brandAssets,style))style='text';
  const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label'),image=$('brand-image');
@@ -353,5 +354,5 @@ for(const button of document.querySelectorAll('[data-brand-style]')){
  button.addEventListener('click',()=>{feedback.button();setBrandStyle(button.dataset.brandStyle);});
 }
 $('brand-image').addEventListener('error',()=>setBrandStyle('text'));
-let savedBrand='text';try{savedBrand=localStorage.getItem('firstgame.brand.v1')||'text';}catch{}
+let savedBrand='unfinished';try{savedBrand=localStorage.getItem('firstgame.brand.v1')||'unfinished';}catch{}
 setBrandStyle(savedBrand);
