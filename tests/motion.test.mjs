@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 const source=readFileSync(new URL('../web/motion.js',import.meta.url),'utf8').replaceAll('export ','');
-function setup(reduced=false){
+function setup(reduced=false,random=Math.random){
  const animations=[],timeouts=[];
  class Node{
   constructor(){this.style={};this.dataset={};this.children=[];this.textContent='';}
@@ -12,7 +12,7 @@ function setup(reduced=false){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,scatterPositions})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,scatterPositions})',{document,Math:Object.assign(Object.create(Math),{random}),Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -90,4 +90,14 @@ test('settled letters touch the floor or another box rather than leaving vertica
   const supported=Math.abs(p.bounds.bottom-12)<1e-7||positions.some(q=>q!==p&&p.bounds.left<q.bounds.right&&p.bounds.right>q.bounds.left&&Math.abs(p.bounds.bottom-q.bounds.top)<1e-7);
   assert.ok(supported);
  }
+});
+
+test('scatter uses all four orientation quadrants and packs mixed widths densely',()=>{
+ let seed=42;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ const env=setup(false,random);
+ const positions=env.scatterPositions(Array.from({length:120},(_,i)=>({width:i%3?7:20,fontSize:20})),360,740);
+ assert.equal(new Set(positions.map(p=>Math.floor(p.angle/90))).size,4);
+ const area=positions.reduce((sum,p)=>sum+(p.bounds.right-p.bounds.left)*(p.bounds.top-p.bounds.bottom),0);
+ const extent=336*(Math.max(...positions.map(p=>p.bounds.top))-12);
+ assert.ok(area/extent>.7,`packing density ${area/extent}`);
 });

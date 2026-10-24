@@ -43,40 +43,41 @@ export function morphGlyphs(before,after,viewport){
  return {finished:Promise.allSettled(animations.map(a=>a.finished)),cancel(){timers.forEach(clearTimeout);animations.forEach(a=>a.cancel());layer.remove();}};
 }
 
-// Reserve rotation-aware cells, then vary column heights rather than forcing a peak.
+// Pack individual rotated bounds, without fixed-width columns or reserved cell gaps.
 export function scatterPositions(glyphs,width,height){
  if(!glyphs.length)return [];
  const sizes=glyphs.map(g=>{
   const size=g.fontSize||parseFloat(g.font?.match(/([\d.]+)px/)?.[1])||20;
-  return {size,w:Math.max(size*.35,(g.width||size)*1.04),h:size*1.08,angle:(Math.random()-.5)*44};
+  const w=Math.max(size*.25,g.width||size),h=size;
+  const angle=Math.random()*360,a=angle*Math.PI/180;
+  return {size,w,h,angle,bw:w*Math.abs(Math.cos(a))+h*Math.abs(Math.sin(a)),bh:h*Math.abs(Math.cos(a))+w*Math.abs(Math.sin(a))};
  });
- const bounds=sizes.map(g=>{const a=Math.abs(g.angle)*Math.PI/180;return {w:g.w*Math.cos(a)+g.h*Math.sin(a),h:g.h*Math.cos(a)+g.w*Math.sin(a)};});
- const maxW=Math.max(...bounds.map(g=>g.w))+.5,maxH=Math.max(...bounds.map(g=>g.h))+.5;
  const availableW=Math.max(1,width-24),availableH=Math.max(1,height-24);
- let scale=1,cols,rows;
- do{cols=Math.max(1,Math.floor(availableW/(maxW*scale)));rows=Math.max(1,Math.floor(availableH/(maxH*scale)));if(cols*rows>=Math.ceil(glyphs.length*1.12))break;scale*=.95;}while(scale>.02);
- const cellW=availableW/cols,cellH=maxH*scale,slots=[];
- for(let col=0;col<cols;col++){
-  const weight=.65+Math.random()*.7,stagger=Math.random()*Math.max(0,availableH-rows*cellH);
-  for(let row=0;row<rows;row++)slots.push({col,row,stagger,priority:(row+.25)/weight+Math.random()*.18});
+ const phase=Math.random()*Math.PI*2;
+ let scale=Math.min(1,availableW/Math.max(...sizes.map(g=>g.bw)),Math.sqrt(availableW*availableH*.8/sizes.reduce((sum,g)=>sum+g.bw*g.bh,0)));
+ for(;;){
+  const placed=[];
+  for(const g of sizes){
+   const bw=g.bw*scale,bh=g.bh*scale,w=g.w*scale,h=g.h*scale;
+   // Every existing left/right edge is a possible contact, not a shared grid.
+   const candidates=[12,12+availableW-bw];
+   for(let i=0;i<placed.length;i+=Math.max(1,Math.floor(placed.length/60))){const q=placed[i];candidates.push(q.bounds.right,q.bounds.left-bw); }
+   let best=null;
+   for(const left of candidates){
+    if(left<12||left+bw>width-12+.000001)continue;
+    let bottom=12;
+    for(const q of placed)if(left<q.bounds.right&&left+bw>q.bounds.left)bottom=Math.max(bottom,q.bounds.top);
+    // A small broad wave leaves an uneven skyline without opening gaps below it.
+    const score=bottom+Math.sin(left/availableW*Math.PI*3+phase)*18*scale;
+    if(!best||score<best.score)best={left,bottom,score};
+   }
+   const {left,bottom}=best,cx=left+bw/2,cy=bottom+bh/2;
+   placed.push({x:cx-w/2,bottom:cy-h/2,width:w,height:h,fontSize:g.size*scale,angle:g.angle,
+    bounds:{left,right:left+bw,bottom,top:bottom+bh}});
+  }
+  if(Math.max(...placed.map(p=>p.bounds.top))<=height-12)return placed;
+  scale*=.94;
  }
- slots.sort((a,b)=>a.priority-b.priority);slots.length=glyphs.length;
- for(let i=slots.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
- const placed=sizes.map((g,i)=>{
-  const slot=slots[i],w=g.w*scale,h=g.h*scale;
-  const cx=12+(slot.col+.5)*cellW;
-  const cy=12+slot.stagger+(slot.row+.5)*cellH;
-  return {x:cx-w/2,bottom:cy-h/2,width:w,height:h,fontSize:g.size*scale,angle:g.angle,
-   bounds:{left:cx-bounds[i].w*scale/2,right:cx+bounds[i].w*scale/2,bottom:cy-bounds[i].h*scale/2,top:cy+bounds[i].h*scale/2}};
- });
- // Settle each box against the boxes underneath, with no deliberate vertical gap.
- const settled=[];
- for(const p of [...placed].sort((a,b)=>a.bounds.bottom-b.bounds.bottom)){
-  let floor=12;
-  for(const q of settled)if(p.bounds.left<q.bounds.right&&p.bounds.right>q.bounds.left)floor=Math.max(floor,q.bounds.top);
-  const shift=p.bounds.bottom-floor;p.bottom-=shift;p.bounds.bottom-=shift;p.bounds.top-=shift;settled.push(p);
- }
- return placed;
 }
 // Keep all characters behind controls; higher letters fade into the background.
 export function fallGlyphs(glyphs,container){

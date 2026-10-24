@@ -142,7 +142,7 @@ function dismissKeyboard(){
 }
 function finish(){
  completed=true;setDebugPage('result');dismissKeyboard();$('font-lab').open=false;const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
- $('whole').textContent='0';$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction-digits').textContent='00';
+ $('whole').textContent='0';$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction').textContent='.00';
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  resultStats=session.stats(Date.now());
@@ -154,7 +154,7 @@ function finish(){
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
- finishTimer=setTimeout(()=>{dismissKeyboard();$('result').hidden=false;$('game').classList.add('finished');resultCountUp=countUpSeconds(seconds,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction-digits').textContent=fraction;});},Math.min(260,burst.duration));
+ finishTimer=setTimeout(()=>{dismissKeyboard();$('result').hidden=false;$('game').classList.add('finished');resultCountUp=countUpSeconds(seconds,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction').textContent='.'+fraction;});},Math.min(260,burst.duration));
 }
 function startClock(){if(session&&!completed){session.start(Date.now());$('timer').classList.add('running');feedback.tap();}}
 input.addEventListener('keydown',event=>{
@@ -353,7 +353,7 @@ function switchDebugPage(page){
  $('words').textContent=article.language==='en'?String((article.text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length):'—';
  $('characters').textContent=String(Array.from(article.text).length);$('message').textContent='';
  $('share').disabled=true;
- resultCountUp=countUpSeconds(12.34,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction-digits').textContent=fraction;});
+ resultCountUp=countUpSeconds(12.34,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction').textContent='.'+fraction;});
  updateFontPanelLayout();
 }
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
