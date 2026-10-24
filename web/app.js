@@ -348,7 +348,7 @@ function switchDebugPage(page){
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
 
 // Reference artwork titles are independent of the font experiment settings.
-const brandAssets={cursor:'./brand/title-cursor.svg',overprint:'./brand/title-overprint.svg',unfinished:'./brand/title-unfinished.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark.svg'};
+const brandAssets={cursor:'./brand/title-cursor.svg',overprint:'./brand/title-overprint-traced.svg',unfinished:'./brand/title-unfinished-traced.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark-traced.svg'};
 function setBrandStyle(style){
  if(style!=='text'&&!Object.hasOwn(brandAssets,style))style='text';
  const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label'),image=$('brand-image');
