@@ -189,7 +189,8 @@ header{gap:16px;min-height:32px}
 #font-lab[open]{top:auto;bottom:0;left:20px;right:20px;width:auto;max-width:none;padding:10px 12px max(10px,env(safe-area-inset-bottom));border-radius:10px 10px 0 0;border-bottom:0}
 #font-lab[open] summary{padding:0 0 10px}
 #font-lab[open] summary span{display:inline}
-#font-lab .font-lab-body{height:min(410px,43vh)}
+#font-lab .font-lab-body{height:auto;max-height:min(410px,43vh)}
+#font-lab .font-options-scroll{flex:0 1 auto}
 
 :root{--font-panel-height:0px}
 .letter-pile{bottom:var(--font-panel-height)}

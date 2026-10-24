@@ -25,7 +25,8 @@ export class TypingFeedback {
  reset(){this.strikes.forEach(a=>a.cancel());this.strikes.clear();this.comboMarks.clear();this.comboAnimations.forEach(a=>a.cancel());this.comboAnimations=[];}
  strike(previous,current,states,nodes){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  // Animate committed/newly changed glyphs; repeated IME events do not replay.
+  // Only a single changed character bounces; batch/IME commits stay still.
+  const single=current.filter((char,i)=>char!==previous[i]&&!/\s/.test(char)).length===1;
   for(let i=Math.max(0,current.length-12);i<current.length;i++){
    if(current[i]===previous[i]||/\s/.test(current[i]))continue;
    const node=nodes[i];if(!node)continue;
@@ -37,9 +38,9 @@ export class TypingFeedback {
     {left:'-3px',offset:.25},{left:'3px',offset:.5},{left:'-1px',offset:.75},
     {left:'0px',color:'#e17b7b',textShadow:'none'}
    ]:[
-    {color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
-    {color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
-    {color:'#eee',textShadow:'none'}
+    {...(single?{top:'0px'}:{}),color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
+    {...(single?{top:'-4px'}:{}),color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
+    {...(single?{top:'0px'}:{}),color:'#eee',textShadow:'none'}
    ],{duration:wrong?260:300,easing:'ease-out'});
    this.strikes.set(node,animation);
    animation.onfinish=()=>{if(this.strikes.get(node)===animation)this.strikes.delete(node);};
