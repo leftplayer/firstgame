@@ -5,7 +5,7 @@ await cp('web/fonts','dist/fonts',{recursive:true});
 await cp('web/brand','dist/brand',{recursive:true});
 const {bundleVendorFonts}=await import('./bundle-vendor-fonts.mjs');
 await bundleVendorFonts();
-for(const name of ['index.html','style.css','app.js','practice.js','feedback.js','motion.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
+for(const name of ['index.html','style.css','app.js','practice.js','feedback.js','motion.js','share.js','pinyin.json'])await copyFile(`web/${name}`,`dist/${name}`);
 await copyFile('assets/resources/articles.json','dist/articles.json');
 await writeFile('dist/session.js',stripTypeScriptTypes(await readFile('assets/scripts/TypingSession.ts','utf8')));
 await writeFile('dist/.nojekyll','');
@@ -28,7 +28,8 @@ const sessionName=await fingerprint('session.js',await readFile('dist/session.js
 const practiceName=await fingerprint('practice.js',await readFile('dist/practice.js','utf8'));
 const feedbackName=await fingerprint('feedback.js',await readFile('dist/feedback.js','utf8'));
 const motionName=await fingerprint('motion.js',await readFile('dist/motion.js','utf8'));
-const appSource=(await readFile('dist/app.js','utf8')).replace('./session.js','./'+sessionName).replace('./practice.js','./'+practiceName).replace('./feedback.js','./'+feedbackName).replace('./motion.js','./'+motionName);
+const shareName=await fingerprint('share.js',(await readFile('dist/share.js','utf8')).replace('./motion.js','./'+motionName));
+const appSource=(await readFile('dist/app.js','utf8')).replace('./share.js','./'+shareName).replace('./session.js','./'+sessionName).replace('./practice.js','./'+practiceName).replace('./feedback.js','./'+feedbackName).replace('./motion.js','./'+motionName);
 const appName=await fingerprint('app.js',appSource);
 const styleName=await fingerprint('style.css',await readFile('dist/style.css','utf8'));
 const html=(await readFile('dist/index.html','utf8')).replace('./app.js','./'+appName).replace('./style.css','./'+styleName);

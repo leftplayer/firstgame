@@ -120,7 +120,7 @@ function inkSprite(g,size,angle){
  sprite.getContext('2d').drawImage(canvas,left*ratio,top*ratio,width*ratio,height*ratio,0,0,width*ratio,height*ratio);
  return {width,height,low,high,sprite,angle,fontSize:size};
 }
-function scatterInk(glyphs,width,height){
+export function scatterInk(glyphs,width,height){
  if(!document.createElement('canvas').getContext)return null;
  const angles=glyphs.map(()=>Math.random()*360);
  let scale=1;
