@@ -12,7 +12,7 @@ function setup(reduced=false){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,moundPositions})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -49,9 +49,9 @@ test('pile stays bounded and keeps glyphs until explicitly cancelled',async()=>{
  const env=setup(),container=new env.Node();container.getBoundingClientRect=()=>({width:360,height:740});
  const effect=env.fallGlyphs(Array.from({length:300},()=>({text:'字',x:30,y:100,font:'21px monospace'})),container);
  assert.equal(effect.nodes.length,300);
- assert.ok(effect.nodes.every(n=>n.style.font==='21px monospace'&&n.style.color==='#fff'));
+ assert.ok(effect.nodes.every(n=>n.style.font==='21px monospace'&&n.style.color.startsWith('rgb(')));
  assert.ok(env.animations.every(a=>a.frames.at(-1).opacity===1));
- assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=100));
+ assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=295));
  await effect.finished;assert.equal(container.children[0].removed,undefined);
  effect.cancel();assert.equal(container.children[0].removed,true);assert.ok(env.animations.every(a=>a.cancelled));
 });
@@ -62,4 +62,18 @@ test('full article capture preserves offscreen characters and repeated letters',
  const viewport={getBoundingClientRect:()=>({left:0,top:0,height:40})};
  assert.equal(env.captureGlyphs(nodes,viewport).length,0);
  assert.deepEqual(Array.from(env.captureGlyphs(nodes,viewport,{all:true}),g=>g.text),texts);
+});
+
+test('mound tapers toward a high central peak and gets lighter toward the top',()=>{
+ const env=setup();const positions=env.moundPositions(300,360,740);
+ assert.equal(positions.length,300);
+ const low=positions.filter(p=>p.level<.2),high=positions.filter(p=>p.level>.8);
+ const spread=a=>Math.max(...a.map(p=>p.x))-Math.min(...a.map(p=>p.x));
+ assert.ok(spread(high)<spread(low)*.4);
+ assert.ok(Math.max(...positions.map(p=>p.bottom))>180);
+ assert.ok(positions.every(p=>p.x>=12&&p.x<=326));
+ const result=env.fallGlyphs(Array.from({length:300},()=>({text:'a',x:0,y:0,font:'20px serif'})),new env.Node());
+ const ordered=[...result.nodes].sort((a,b)=>parseFloat(a.style.bottom)-parseFloat(b.style.bottom));
+ const shade=n=>Number(n.style.color.match(/\d+/)[0]);
+ assert.ok(shade(ordered.at(-1))>shade(ordered[0]));
 });

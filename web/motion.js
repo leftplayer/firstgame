@@ -43,20 +43,38 @@ export function morphGlyphs(before,after,viewport){
  return {finished:Promise.allSettled(animations.map(a=>a.finished)),cancel(){timers.forEach(clearTimeout);animations.forEach(a=>a.cancel());layer.remove();}};
 }
 
-// A bounded, bottom-anchored pile stays behind result controls after the fall.
+// Build a tapered mound; keep every source glyph, including long passages.
+export function moundPositions(count,width,height){
+ if(!count)return [];
+ const columns=Math.max(1,Math.min(Math.floor((width-40)/22),Math.ceil(Math.sqrt(count*2))));
+ let rows=1,capacities;
+ do{capacities=Array.from({length:rows},(_,r)=>Math.max(1,Math.round(columns*(1-r/rows))));if(capacities.reduce((a,b)=>a+b,0)>=count)break;rows++;}while(rows<count);
+ const peak=Math.min(280,height*.36,Math.max(26,(rows-1)*15));
+ const slots=[];
+ capacities.forEach((capacity,row)=>{
+  const level=rows===1?0:row/(rows-1);
+  const span=Math.max(0,(capacity-1)*22);
+  for(let col=0;col<capacity;col++)slots.push({x:(width-22-span)/2+(capacity===1?0:col*22),bottom:12+level*peak,level});
+ });
+ return Array.from({length:count},(_,i)=>{
+  const slot=slots[count===1?0:Math.round(i*(slots.length-1)/(count-1))];
+  return {...slot,x:Math.max(12,Math.min(width-34,slot.x+(Math.random()-.5)*7)),bottom:Math.max(8,slot.bottom+(Math.random()-.5)*5)};
+ });
+}
+// A bottom-anchored mound stays behind result controls after the fall.
 export function fallGlyphs(glyphs,container){
  const layer=document.createElement('div');layer.className='letter-pile';layer.setAttribute('aria-hidden','true');container.append(layer);
  const box=layer.getBoundingClientRect(),animations=[],nodes=[];
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const columns=Math.max(1,Math.floor((box.width-36)/22)),heights=Array(columns).fill(0);
  const selected=glyphs.filter(g=>g.text.trim());
+ const positions=moundPositions(selected.length,box.width,box.height);
+ // Randomize which character lands in each slot without changing the mound silhouette.
+ for(let i=positions.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[positions[i],positions[j]]=[positions[j],positions[i]];}
  selected.forEach((g,i)=>{
-  // Prefer low neighboring columns; capped rows prevent a long passage covering the score.
-  const a=Math.floor(Math.random()*columns),b=Math.floor(Math.random()*columns),col=heights[a]<=heights[b]?a:b;
-  const row=heights[col]++;const bottom=12+Math.min(row,8)*11;
-  const x=18+col*22+(Math.random()-.5)*8,angle=(Math.random()-.5)*110;
+  const {x,bottom,level}=positions[i],angle=(Math.random()-.5)*100;
+  const shade=Math.round(90+165*level),color=`rgb(${shade}, ${shade}, ${shade})`;
   const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
-  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color:'#fff'});layer.append(node);nodes.push(node);
+  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color});layer.append(node);nodes.push(node);
   const sx=g.x-x,sy=Math.max(0,g.y)-(box.height-bottom-37),kick=(Math.random()-.5)*90;
   const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
   const frames=[
