@@ -3,7 +3,7 @@ export function captureGlyphs(nodes,viewport,{all=false}={}){
  const box=viewport.getBoundingClientRect();
  return nodes.map(node=>{
   const r=node.getBoundingClientRect(),s=getComputedStyle(node);
-  return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,fontSize:parseFloat(s.fontSize),color:s.color,wrong:node.classList?.contains('wrong')??false};
+  return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,fontFamily:s.fontFamily,fontSize:parseFloat(s.fontSize),color:s.color,wrong:node.classList?.contains('wrong')??false};
  }).filter(g=>g.text.trim()&&(all||(g.y>=-1&&g.y+g.height<=box.height+1)));
 }
 // Prefer identical characters, then pair remaining slots for cross-language changes.
@@ -79,22 +79,77 @@ export function scatterPositions(glyphs,width,height){
   scale*=.94;
  }
 }
+// Columns follow the visible ink silhouette, not the empty rotated rectangle.
+export function packInkProfiles(profiles,width,height){
+ const margin=4,sky=new Float64Array(width).fill(margin),placed=[];
+ const phase=Math.random()*Math.PI*2;
+ for(const p of profiles){
+  let best=null;
+  for(let x=margin;x+p.width<=width-margin;x++){
+   let y=margin;
+   for(let c=0;c<p.width;c++)if(p.low[c]!==Infinity)y=Math.max(y,sky[x+c]-p.low[c]);
+   const score=y+Math.sin(x/width*Math.PI*3+phase)*12;
+   if(!best||score<best.score)best={x,y,score};
+  }
+  if(!best||best.y+p.height>height-margin)return null;
+  for(let c=0;c<p.width;c++)if(p.low[c]!==Infinity)sky[best.x+c]=Math.max(sky[best.x+c],best.y+p.high[c]+1);
+  placed.push({...p,x:best.x,bottom:best.y});
+ }
+ return placed;
+}
+function inkSprite(g,size,angle){
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext?.('2d',{willReadFrequently:true});
+ if(!ctx)return null;
+ const ratio=2,side=Math.ceil(size*2.5);canvas.width=canvas.height=side*ratio;
+ const family=g.fontFamily||g.font?.replace(/^.*?[\d.]+px(?:\s*\/\s*[\d.]+px)?\s*/,'')||'sans-serif';
+ ctx.scale(ratio,ratio);ctx.translate(side/2,side/2);ctx.rotate(angle*Math.PI/180);
+ ctx.font=`700 ${size}px ${family}`;ctx.fillStyle=g.wrong?'#e17b7b':'#fff';
+ const m=ctx.measureText(g.text);
+ ctx.fillText(g.text,(m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+ let left=side,top=side,right=0,bottom=0;const pixels=[];
+ for(let y=0;y<side;y++)for(let x=0;x<side;x++){
+  let ink=false;
+  for(let dy=0;dy<ratio;dy++)for(let dx=0;dx<ratio;dx++)if(data[((y*ratio+dy)*canvas.width+x*ratio+dx)*4+3]>2)ink=true;
+  if(ink){pixels.push([x,y]);left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+ }
+ if(!pixels.length)return null;
+ const width=right-left+1,height=bottom-top+1,low=new Array(width).fill(Infinity),high=new Array(width).fill(-Infinity);
+ for(const [x,y] of pixels){const c=x-left,v=bottom-y;low[c]=Math.min(low[c],v);high[c]=Math.max(high[c],v);}
+ const sprite=document.createElement('canvas');sprite.width=width*ratio;sprite.height=height*ratio;
+ sprite.getContext('2d').drawImage(canvas,left*ratio,top*ratio,width*ratio,height*ratio,0,0,width*ratio,height*ratio);
+ return {width,height,low,high,sprite,angle,fontSize:size};
+}
+function scatterInk(glyphs,width,height){
+ if(!document.createElement('canvas').getContext)return null;
+ const angles=glyphs.map(()=>Math.random()*360);
+ let scale=1;
+ while(scale>.05){
+  const profiles=glyphs.map((g,i)=>inkSprite(g,(g.fontSize||20)*scale,angles[i]));
+  if(profiles.some(p=>!p))return null;
+  const placed=packInkProfiles(profiles,Math.floor(width),Math.floor(height));
+  if(placed)return placed;
+  scale*=.9;
+ }
+ return null;
+}
+
 // Keep all characters behind controls; higher letters fade into the background.
 export function fallGlyphs(glyphs,container){
  const layer=document.createElement('div');layer.className='letter-pile';layer.setAttribute('aria-hidden','true');container.append(layer);
  const box=layer.getBoundingClientRect(),animations=[],nodes=[];
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const selected=glyphs.filter(g=>g.text.trim()),positions=scatterPositions(selected,box.width,box.height);
+ const selected=glyphs.filter(g=>g.text.trim()),positions=scatterInk(selected,box.width,box.height)||scatterPositions(selected,box.width,box.height);
  const actions=container.querySelector?.('.actions')?.getBoundingClientRect();
  const fadeStart=actions&&actions.height>0?Math.max(24,box.bottom-actions.bottom):Math.min(160,box.height*.25);
  selected.forEach((g,i)=>{
   const {x,bottom,width,height,fontSize,angle}=positions[i];
   const elevation=Math.max(0,Math.min(1,(bottom+height/2-fadeStart)/Math.max(1,box.height-fadeStart)));
   const opacity=.055+.945*Math.pow(1-elevation,2.1);
-  const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
+  const node=positions[i].sprite||document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
   Object.assign(node.style,{left:x+'px',bottom:bottom+'px',width:width+'px',height:height+'px',font:g.font,fontSize:fontSize+'px',lineHeight:height+'px',textAlign:'center',fontWeight:'700',color:g.wrong?'#e17b7b':'#fff'});layer.append(node);nodes.push(node);
   const sx=g.x-x,sy=Math.max(0,g.y)-(box.height-bottom-height),kick=(Math.random()-.5)*70;
-  const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
+  const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r-(positions[i].sprite?angle:0)}deg)`;
   const frames=[
    {transform:tr(sx,sy,0),opacity:1,offset:0},
    {transform:tr(sx+kick,sy-22,angle*.35),opacity:1,offset:.14,easing:'cubic-bezier(.45,0,1,1)'},

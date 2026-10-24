@@ -12,7 +12,7 @@ function setup(reduced=false,random=Math.random){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,scatterPositions})',{document,Math:Object.assign(Object.create(Math),{random}),Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,scatterPositions,packInkProfiles})',{document,Math:Object.assign(Object.create(Math),{random}),Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -100,4 +100,22 @@ test('scatter uses all four orientation quadrants and packs mixed widths densely
  const area=positions.reduce((sum,p)=>sum+(p.bounds.right-p.bounds.left)*(p.bounds.top-p.bounds.bottom),0);
  const extent=336*(Math.max(...positions.map(p=>p.bounds.top))-12);
  assert.ok(area/extent>.7,`packing density ${area/extent}`);
+});
+
+test('ink contours nest inside bounding-box whitespace without sharing ink cells',()=>{
+ const env=setup(false,()=>.5);
+ const profiles=Array.from({length:100},(_,i)=>({width:12,height:12,low:Array.from({length:12},(_,x)=>i%2?11-x:x),high:Array.from({length:12},(_,x)=>i%2?11-x:x)}));
+ const positions=env.packInkProfiles(profiles,120,240),occupied=new Set();
+ assert.equal(positions.length,100);
+ let boxesIntersect=false;
+ for(let i=0;i<positions.length;i++){
+  const p=positions[i];
+  for(let x=0;x<p.width;x++)for(let y=p.low[x];y<=p.high[x];y++){
+   const key=`${p.x+x},${p.bottom+y}`;assert.ok(!occupied.has(key));occupied.add(key);
+  }
+  for(let j=0;j<i;j++){const q=positions[j];if(p.x<q.x+q.width&&p.x+p.width>q.x&&p.bottom<q.bottom+q.height&&p.bottom+p.height>q.bottom)boxesIntersect=true;}
+ }
+ assert.ok(boxesIntersect,'empty rectangle corners should no longer prevent nesting');
+ assert.ok(Math.max(...positions.map(p=>p.bottom+p.height))<100);
+ assert.equal(env.packInkProfiles(profiles,120,15),null);
 });
