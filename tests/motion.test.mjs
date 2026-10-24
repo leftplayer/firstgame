@@ -83,3 +83,11 @@ test('wrong glyphs remain red and upper letters fade more than lower letters',()
  assert.ok(env.animations[indices.at(-1)].frames.at(-1).opacity<.15);
  assert.ok(env.animations[indices[0]].frames.at(-1).opacity>.9);
 });
+
+test('settled letters touch the floor or another box rather than leaving vertical padding',()=>{
+ const env=setup();const positions=env.scatterPositions(Array.from({length:90},()=>({width:20,fontSize:20})),360,740);
+ for(const p of positions){
+  const supported=Math.abs(p.bounds.bottom-12)<1e-7||positions.some(q=>q!==p&&p.bounds.left<q.bounds.right&&p.bounds.right>q.bounds.left&&Math.abs(p.bounds.bottom-q.bounds.top)<1e-7);
+  assert.ok(supported);
+ }
+});

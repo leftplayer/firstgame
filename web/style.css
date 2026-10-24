@@ -237,3 +237,9 @@ header{min-height:32px;gap:12px;margin-top:8px;margin-bottom:24px}
 .brand.has-image #brand-image{height:var(--brand-height);max-width:none;flex:none;object-fit:contain;transform:none}
 
 .metrics>div[hidden]{display:none!important}
+
+/* A decimal separator needs less advance than a full monospaced digit. */
+.result-summary .score{gap:0}
+.result-summary #whole,.result-summary #fraction{letter-spacing:normal;margin:0;padding:0}
+.result-summary #fraction{display:inline-flex;align-items:baseline;gap:0}
+.result-summary .decimal-point{display:inline-flex;justify-content:center;flex:0 0 .24em;width:.24em}

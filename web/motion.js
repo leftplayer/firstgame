@@ -48,10 +48,10 @@ export function scatterPositions(glyphs,width,height){
  if(!glyphs.length)return [];
  const sizes=glyphs.map(g=>{
   const size=g.fontSize||parseFloat(g.font?.match(/([\d.]+)px/)?.[1])||20;
-  return {size,w:Math.max(size*.65,(g.width||size)*1.25),h:size*1.35,angle:(Math.random()-.5)*44};
+  return {size,w:Math.max(size*.35,(g.width||size)*1.04),h:size*1.08,angle:(Math.random()-.5)*44};
  });
  const bounds=sizes.map(g=>{const a=Math.abs(g.angle)*Math.PI/180;return {w:g.w*Math.cos(a)+g.h*Math.sin(a),h:g.h*Math.cos(a)+g.w*Math.sin(a)};});
- const maxW=Math.max(...bounds.map(g=>g.w))+6,maxH=Math.max(...bounds.map(g=>g.h))+7;
+ const maxW=Math.max(...bounds.map(g=>g.w))+.5,maxH=Math.max(...bounds.map(g=>g.h))+.5;
  const availableW=Math.max(1,width-24),availableH=Math.max(1,height-24);
  let scale=1,cols,rows;
  do{cols=Math.max(1,Math.floor(availableW/(maxW*scale)));rows=Math.max(1,Math.floor(availableH/(maxH*scale)));if(cols*rows>=Math.ceil(glyphs.length*1.12))break;scale*=.95;}while(scale>.02);
@@ -62,13 +62,21 @@ export function scatterPositions(glyphs,width,height){
  }
  slots.sort((a,b)=>a.priority-b.priority);slots.length=glyphs.length;
  for(let i=slots.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
- return sizes.map((g,i)=>{
+ const placed=sizes.map((g,i)=>{
   const slot=slots[i],w=g.w*scale,h=g.h*scale;
-  const cx=12+(slot.col+.5)*cellW+(Math.random()-.5)*2*scale;
-  const cy=12+slot.stagger+(slot.row+.5)*cellH+(Math.random()-.5)*2*scale;
+  const cx=12+(slot.col+.5)*cellW;
+  const cy=12+slot.stagger+(slot.row+.5)*cellH;
   return {x:cx-w/2,bottom:cy-h/2,width:w,height:h,fontSize:g.size*scale,angle:g.angle,
    bounds:{left:cx-bounds[i].w*scale/2,right:cx+bounds[i].w*scale/2,bottom:cy-bounds[i].h*scale/2,top:cy+bounds[i].h*scale/2}};
  });
+ // Settle each box against the boxes underneath, with no deliberate vertical gap.
+ const settled=[];
+ for(const p of [...placed].sort((a,b)=>a.bounds.bottom-b.bounds.bottom)){
+  let floor=12;
+  for(const q of settled)if(p.bounds.left<q.bounds.right&&p.bounds.right>q.bounds.left)floor=Math.max(floor,q.bounds.top);
+  const shift=p.bounds.bottom-floor;p.bottom-=shift;p.bounds.bottom-=shift;p.bounds.top-=shift;settled.push(p);
+ }
+ return placed;
 }
 // Keep all characters behind controls; higher letters fade into the background.
 export function fallGlyphs(glyphs,container){
