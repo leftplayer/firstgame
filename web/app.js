@@ -11,6 +11,7 @@ const feedback=new TypingFeedback();
 const rollingTimer=new RollingTimer($('timer'));
 let transition,transitionWidth;
 let burst,finishTimer,resultStats,resultCountUp,restarting=false;
+let debugPreview=null;
 let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
@@ -65,6 +66,7 @@ async function restartWithShuffle(){
 }
 window.addEventListener('resize',()=>{if(transition&&innerWidth!==transitionWidth)transition.cancel();});
 function restart(selected){
+ debugPreview=null;$('share').disabled=false;setDebugPage('typing');
  resultCountUp?.cancel();resultCountUp=null;feedback.reset();
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
@@ -133,7 +135,7 @@ function dismissKeyboard(){
  try{navigator.virtualKeyboard?.hide();}catch{}
 }
 function finish(){
- completed=true;dismissKeyboard();$('font-lab').open=false;const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
+ completed=true;setDebugPage('result');dismissKeyboard();$('font-lab').open=false;const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting');feedback.finish();input.blur();caret.remove();const seconds=session.seconds(Date.now());const parts=seconds.toFixed(2).split('.');
  $('whole').textContent='0';$('whole').style.fontSize=parts[0].length>3?'44px':'';$('fraction').style.fontSize=$('whole').style.fontSize;$('fraction').textContent='.00';
  let message='';
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
@@ -183,13 +185,13 @@ for(const button of document.querySelectorAll('button')){
  button.addEventListener('contextmenu',event=>event.preventDefault());
 }
 $('restart').onclick=$('again').onclick=restartWithShuffle;
-$('share').onclick=async()=>{const data={title:'Now Typing',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
-function tick(){if(session)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
+$('share').onclick=async()=>{if(debugPreview)return;const data={title:'Now Typing',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
+function tick(){if(session&&!debugPreview)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
- en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],jetbrains:['JetBrains Mono','JetBrains Mono'],geist:['Geist','Geist'],press:['Press Start 2P','Press Start 2P · 像素']},
+ en:{serif:['Roboto Slab','Roboto Slab · 衬线'],cutive:['Cutive Mono','Cutive Mono · 打字机'],courier:['Courier Prime','Courier Prime · 经典'],jetbrains:['JetBrains Mono','JetBrains Mono'],geist:['Geist','Geist']},
  zh:{sans:['Noto Sans SC','思源黑体'],serif:['Noto Serif SC','思源宋体'],misans:['MiSans','小米 MiSans']}
 };
 const fontScopes=['title','body','data'],fontLangs=['en','zh'];
@@ -297,3 +299,37 @@ new ResizeObserver(updateFontPanelLayout).observe($('font-lab'));
 updateFontPanelLayout();
 window.addEventListener('resize',fitBrand);
 changeFonts(fontChoice);
+
+// Debug previews never finish a real session or write a record.
+function setDebugPage(page){
+ for(const button of document.querySelectorAll('[data-debug-page]'))button.setAttribute('aria-pressed',String(button.dataset.debugPage===page));
+}
+function switchDebugPage(page){
+ if(!session||restarting)return;
+ if(page==='typing'){
+  if(debugPreview){
+   const elapsed=Date.now()-debugPreview.enteredAt;
+   if(session.startedAt!==null)session.startedAt+=elapsed;
+   debugPreview=null;resultStats=null;completed=false;
+   clearTimeout(finishTimer);resultCountUp?.cancel();resultCountUp=null;burst?.cancel();burst=null;
+   $('game').classList.remove('finished','bursting');$('result').hidden=true;
+   input.disabled=false;input.readOnly=false;input.value=session.value;$('share').disabled=false;
+   alignActiveLine();
+  }else if(completed){restart(article);}
+  setDebugPage('typing');updateFontPanelLayout();return;
+ }
+ setDebugPage('result');
+ if(completed)return;
+ debugPreview={enteredAt:Date.now()};completed=true;dismissKeyboard();composing=false;clearPending();feedback.reset();
+ input.value=session.value;
+ const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));
+ burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting','finished');$('result').hidden=false;
+ $('whole').style.fontSize='';$('fraction').style.fontSize='';
+ $('accuracy').textContent='98.5%';$('speed').textContent=article.language==='en'?'72':'—';
+ $('words').textContent=article.language==='en'?String((article.text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length):'—';
+ $('characters').textContent=String(Array.from(article.text).length);$('message').textContent='';
+ $('share').disabled=true;
+ resultCountUp=countUpSeconds(12.34,value=>{const [whole,fraction]=value.split('.');$('whole').textContent=whole;$('fraction').textContent='.'+fraction;});
+ updateFontPanelLayout();
+}
+for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));

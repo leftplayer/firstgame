@@ -37,9 +37,9 @@ export class TypingFeedback {
     {left:'-3px',offset:.25},{left:'3px',offset:.5},{left:'-1px',offset:.75},
     {left:'0px',color:'#e17b7b',textShadow:'none'}
    ]:[
-    {top:'3px',color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
-    {top:'-5px',color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
-    {top:'0px',color:'#eee',textShadow:'none'}
+    {color:'#ffd599',textShadow:'0 0 12px #ffa124aa'},
+    {color:'#fff',textShadow:'0 0 7px #ffa12488',offset:.35},
+    {color:'#eee',textShadow:'none'}
    ],{duration:wrong?260:300,easing:'ease-out'});
    this.strikes.set(node,animation);
    animation.onfinish=()=>{if(this.strikes.get(node)===animation)this.strikes.delete(node);};
@@ -61,10 +61,10 @@ export class TypingFeedback {
    if(states[Math.max(0,hit-9)+i]!=='correct'||!node.textContent.trim())return;
    this.strikes.get(node)?.cancel();this.strikes.delete(node);
    this.comboAnimations.push(node.animate([
-    {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'},
-    {color:'#ffb64d',textShadow:'0 0 20px #ff941a',top:'-8px',offset:.32},
-    {color:'#fff0d6',textShadow:'0 0 10px #ff941aaa',top:'1px',offset:.65},
-    {color:'#eee',textShadow:'0 0 0 transparent',top:'0px'}
+    {color:'#eee',textShadow:'0 0 0 transparent'},
+    {color:'#ffb64d',textShadow:'0 0 20px #ff941a',offset:.32},
+    {color:'#fff0d6',textShadow:'0 0 10px #ff941aaa',offset:.65},
+    {color:'#eee',textShadow:'0 0 0 transparent'}
    ],{duration:580,delay:i*22,easing:'ease-out'}));
   });
  }

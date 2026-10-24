@@ -209,3 +209,6 @@ header{gap:16px;min-height:32px}
 #game.font-debug-open #result .actions{position:static;flex:none;justify-content:center;margin:0 0 auto;gap:24px}
 #game.font-debug-open #message{position:static;margin:0;flex:none}
 #game.font-debug-open #message:empty{display:none}
+
+.debug-page-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex-shrink:0}
+#font-note[hidden]{display:none}
