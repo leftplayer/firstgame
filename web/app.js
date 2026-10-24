@@ -1,4 +1,4 @@
-import {shareDetails,updateShareMetadata} from './share.js';
+import {shareDetails,updateShareMetadata,shareViaBrowser} from './share.js';
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
 import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer,countUpSeconds} from './motion.js?v=full-pile-6';
@@ -200,7 +200,7 @@ $('share').onclick=async()=>{
  if(debugPreview||!completed)return;
  const data=shareDetails(article,session.seconds(Date.now()),location.href);
  try{
-  if(navigator.share)await navigator.share(data);
+  if(navigator.share)await shareViaBrowser(data);
   else{await navigator.clipboard.writeText(`${data.title}\n${data.text}\n${data.url}`);$('message').textContent='分享文案和同篇文章链接已复制';}
  }catch(e){if(e.name!=='AbortError')$('message').textContent='分享未成功，可复制浏览器地址邀请朋友打同一篇。';}
 };
