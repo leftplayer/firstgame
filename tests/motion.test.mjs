@@ -12,7 +12,7 @@ function setup(reduced=false){
   animate(frames,options){const a={frames,options,finished:Promise.resolve(),cancel(){this.cancelled=true;}};animations.push(a);return a;}
  }
  const document={createElement:()=>new Node(),body:new Node()};
- const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,moundPositions})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
+ const api=runInNewContext(source+';({RollingTimer,morphGlyphs,pairGlyphs,fallGlyphs,captureGlyphs,scatterPositions})',{document,Math,Promise,matchMedia:()=>({matches:reduced}),getComputedStyle:()=>({maskImage:'none'}),setTimeout:fn=>{timeouts.push(fn);return timeouts.length;},clearTimeout(){}});
  return {...api,Node,animations,timeouts,document};
 }
 test('timer animates only changed digits, carries correctly, and resets without rolling',()=>{
@@ -49,9 +49,9 @@ test('pile stays bounded and keeps glyphs until explicitly cancelled',async()=>{
  const env=setup(),container=new env.Node();container.getBoundingClientRect=()=>({width:360,height:740});
  const effect=env.fallGlyphs(Array.from({length:300},()=>({text:'字',x:30,y:100,font:'21px monospace'})),container);
  assert.equal(effect.nodes.length,300);
- assert.ok(effect.nodes.every(n=>n.style.font==='21px monospace'&&n.style.color.startsWith('rgb(')));
- assert.ok(env.animations.every(a=>a.frames.at(-1).opacity===1));
- assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<=295));
+ assert.ok(effect.nodes.every(n=>n.style.font==='21px monospace'&&n.style.color==='#fff'));
+ assert.ok(env.animations.every(a=>a.frames.at(-1).opacity>0));
+ assert.ok(effect.nodes.every(n=>parseFloat(n.style.bottom)<740));
  await effect.finished;assert.equal(container.children[0].removed,undefined);
  effect.cancel();assert.equal(container.children[0].removed,true);assert.ok(env.animations.every(a=>a.cancelled));
 });
@@ -64,16 +64,22 @@ test('full article capture preserves offscreen characters and repeated letters',
  assert.deepEqual(Array.from(env.captureGlyphs(nodes,viewport,{all:true}),g=>g.text),texts);
 });
 
-test('mound tapers toward a high central peak and gets lighter toward the top',()=>{
- const env=setup();const positions=env.moundPositions(300,360,740);
- assert.equal(positions.length,300);
- const low=positions.filter(p=>p.level<.2),high=positions.filter(p=>p.level>.8);
- const spread=a=>Math.max(...a.map(p=>p.x))-Math.min(...a.map(p=>p.x));
- assert.ok(spread(high)<spread(low)*.4);
- assert.ok(Math.max(...positions.map(p=>p.bottom))>180);
- assert.ok(positions.every(p=>p.x>=12&&p.x<=326));
- const result=env.fallGlyphs(Array.from({length:300},()=>({text:'a',x:0,y:0,font:'20px serif'})),new env.Node());
- const ordered=[...result.nodes].sort((a,b)=>parseFloat(a.style.bottom)-parseFloat(b.style.bottom));
- const shade=n=>Number(n.style.color.match(/\d+/)[0]);
- assert.ok(shade(ordered.at(-1))>shade(ordered[0]));
+test('irregular scatter retains every glyph without rotated bounding-box overlap',()=>{
+ const env=setup();
+ for(const count of [20,90,300,800])for(const [w,h] of [[360,740],[320,420]]){
+  const positions=env.scatterPositions(Array.from({length:count},(_,i)=>({width:i%2?12:20,fontSize:20})),w,h);
+  assert.equal(positions.length,count);
+  for(let i=0;i<count;i++){
+   const a=positions[i].bounds;assert.ok(a.left>=0&&a.right<=w&&a.bottom>=0&&a.top<=h);
+   for(let j=0;j<i;j++){const b=positions[j].bounds;assert.ok(a.right<=b.left||a.left>=b.right||a.top<=b.bottom||a.bottom>=b.top,`overlap ${count}: ${i}/${j}`);}
+  }
+ }
+});
+test('wrong glyphs remain red and upper letters fade more than lower letters',()=>{
+ const env=setup(),container=new env.Node();
+ const result=env.fallGlyphs(Array.from({length:300},(_,i)=>({text:'字',wrong:i===0,x:0,y:0,width:20,fontSize:20,font:'20px serif'})),container);
+ assert.equal(result.nodes[0].style.color,'#e17b7b');
+ const indices=result.nodes.map((_,i)=>i).sort((a,b)=>parseFloat(result.nodes[a].style.bottom)-parseFloat(result.nodes[b].style.bottom));
+ assert.ok(env.animations[indices.at(-1)].frames.at(-1).opacity<.15);
+ assert.ok(env.animations[indices[0]].frames.at(-1).opacity>.9);
 });

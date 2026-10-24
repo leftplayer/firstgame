@@ -3,7 +3,7 @@ export function captureGlyphs(nodes,viewport,{all=false}={}){
  const box=viewport.getBoundingClientRect();
  return nodes.map(node=>{
   const r=node.getBoundingClientRect(),s=getComputedStyle(node);
-  return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,color:s.color};
+  return {text:node.textContent,x:r.left-box.left,y:r.top-box.top,width:r.width,height:r.height,font:s.font,fontSize:parseFloat(s.fontSize),color:s.color,wrong:node.classList?.contains('wrong')??false};
  }).filter(g=>g.text.trim()&&(all||(g.y>=-1&&g.y+g.height<=box.height+1)));
 }
 // Prefer identical characters, then pair remaining slots for cross-language changes.
@@ -43,48 +43,55 @@ export function morphGlyphs(before,after,viewport){
  return {finished:Promise.allSettled(animations.map(a=>a.finished)),cancel(){timers.forEach(clearTimeout);animations.forEach(a=>a.cancel());layer.remove();}};
 }
 
-// Build a tapered mound; keep every source glyph, including long passages.
-export function moundPositions(count,width,height){
- if(!count)return [];
- const columns=Math.max(1,Math.min(Math.floor((width-40)/22),Math.ceil(Math.sqrt(count*2))));
- let rows=1,capacities;
- do{capacities=Array.from({length:rows},(_,r)=>Math.max(1,Math.round(columns*(1-r/rows))));if(capacities.reduce((a,b)=>a+b,0)>=count)break;rows++;}while(rows<count);
- const peak=Math.min(280,height*.36,Math.max(26,(rows-1)*15));
- const slots=[];
- capacities.forEach((capacity,row)=>{
-  const level=rows===1?0:row/(rows-1);
-  const span=Math.max(0,(capacity-1)*22);
-  for(let col=0;col<capacity;col++)slots.push({x:(width-22-span)/2+(capacity===1?0:col*22),bottom:12+level*peak,level});
+// Reserve rotation-aware cells, then vary column heights rather than forcing a peak.
+export function scatterPositions(glyphs,width,height){
+ if(!glyphs.length)return [];
+ const sizes=glyphs.map(g=>{
+  const size=g.fontSize||parseFloat(g.font?.match(/([\d.]+)px/)?.[1])||20;
+  return {size,w:Math.max(size*.65,(g.width||size)*1.25),h:size*1.35,angle:(Math.random()-.5)*44};
  });
- return Array.from({length:count},(_,i)=>{
-  const slot=slots[count===1?0:Math.round(i*(slots.length-1)/(count-1))];
-  return {...slot,x:Math.max(12,Math.min(width-34,slot.x+(Math.random()-.5)*7)),bottom:Math.max(8,slot.bottom+(Math.random()-.5)*5)};
+ const bounds=sizes.map(g=>{const a=Math.abs(g.angle)*Math.PI/180;return {w:g.w*Math.cos(a)+g.h*Math.sin(a),h:g.h*Math.cos(a)+g.w*Math.sin(a)};});
+ const maxW=Math.max(...bounds.map(g=>g.w))+6,maxH=Math.max(...bounds.map(g=>g.h))+7;
+ const availableW=Math.max(1,width-24),availableH=Math.max(1,height-24);
+ let scale=1,cols,rows;
+ do{cols=Math.max(1,Math.floor(availableW/(maxW*scale)));rows=Math.max(1,Math.floor(availableH/(maxH*scale)));if(cols*rows>=Math.ceil(glyphs.length*1.12))break;scale*=.95;}while(scale>.02);
+ const cellW=availableW/cols,cellH=maxH*scale,slots=[];
+ for(let col=0;col<cols;col++){
+  const weight=.65+Math.random()*.7,stagger=Math.random()*Math.max(0,availableH-rows*cellH);
+  for(let row=0;row<rows;row++)slots.push({col,row,stagger,priority:(row+.25)/weight+Math.random()*.18});
+ }
+ slots.sort((a,b)=>a.priority-b.priority);slots.length=glyphs.length;
+ for(let i=slots.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
+ return sizes.map((g,i)=>{
+  const slot=slots[i],w=g.w*scale,h=g.h*scale;
+  const cx=12+(slot.col+.5)*cellW+(Math.random()-.5)*2*scale;
+  const cy=12+slot.stagger+(slot.row+.5)*cellH+(Math.random()-.5)*2*scale;
+  return {x:cx-w/2,bottom:cy-h/2,width:w,height:h,fontSize:g.size*scale,angle:g.angle,
+   bounds:{left:cx-bounds[i].w*scale/2,right:cx+bounds[i].w*scale/2,bottom:cy-bounds[i].h*scale/2,top:cy+bounds[i].h*scale/2}};
  });
 }
-// A bottom-anchored mound stays behind result controls after the fall.
+// Keep all characters behind controls; higher letters fade into the background.
 export function fallGlyphs(glyphs,container){
  const layer=document.createElement('div');layer.className='letter-pile';layer.setAttribute('aria-hidden','true');container.append(layer);
  const box=layer.getBoundingClientRect(),animations=[],nodes=[];
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const selected=glyphs.filter(g=>g.text.trim());
- const positions=moundPositions(selected.length,box.width,box.height);
- // Randomize which character lands in each slot without changing the mound silhouette.
- for(let i=positions.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[positions[i],positions[j]]=[positions[j],positions[i]];}
+ const selected=glyphs.filter(g=>g.text.trim()),positions=scatterPositions(selected,box.width,box.height);
+ const actions=container.querySelector?.('.actions')?.getBoundingClientRect();
+ const fadeStart=actions&&actions.height>0?Math.max(24,box.bottom-actions.bottom):Math.min(160,box.height*.25);
  selected.forEach((g,i)=>{
-  const {x,bottom,level}=positions[i],angle=(Math.random()-.5)*100;
-  const shade=Math.round(90+165*level),color=`rgb(${shade}, ${shade}, ${shade})`;
+  const {x,bottom,width,height,fontSize,angle}=positions[i];
+  const elevation=Math.max(0,Math.min(1,(bottom+height/2-fadeStart)/Math.max(1,box.height-fadeStart)));
+  const opacity=.055+.945*Math.pow(1-elevation,2.1);
   const node=document.createElement('span');node.className='pile-glyph';node.textContent=g.text;
-  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',font:g.font,fontWeight:'700',color});layer.append(node);nodes.push(node);
-  const sx=g.x-x,sy=Math.max(0,g.y)-(box.height-bottom-37),kick=(Math.random()-.5)*90;
+  Object.assign(node.style,{left:x+'px',bottom:bottom+'px',width:width+'px',height:height+'px',font:g.font,fontSize:fontSize+'px',lineHeight:height+'px',textAlign:'center',fontWeight:'700',color:g.wrong?'#e17b7b':'#fff'});layer.append(node);nodes.push(node);
+  const sx=g.x-x,sy=Math.max(0,g.y)-(box.height-bottom-height),kick=(Math.random()-.5)*70;
   const tr=(x,y,r)=>`translate(${x}px,${y}px) rotate(${r}deg)`;
   const frames=[
    {transform:tr(sx,sy,0),opacity:1,offset:0},
    {transform:tr(sx+kick,sy-22,angle*.35),opacity:1,offset:.14,easing:'cubic-bezier(.45,0,1,1)'},
-   {transform:tr(0,0,angle+12),opacity:1,offset:.68,easing:'ease-out'},
-   {transform:tr(kick*.08,-16,angle-8),opacity:1,offset:.79,easing:'ease-in'},
-   {transform:tr(0,0,angle+3),opacity:1,offset:.90},
-   {transform:tr(0,-3,angle-2),opacity:1,offset:.95},
-   {transform:tr(0,0,angle),opacity:1,offset:1}
+   {transform:tr(0,0,angle+6),opacity,offset:.74,easing:'ease-out'},
+   {transform:tr(0,-8,angle-3),opacity,offset:.86,easing:'ease-in'},
+   {transform:tr(0,0,angle),opacity,offset:1}
   ];
   animations.push(node.animate(reduced?[frames.at(-1)]:frames,{duration:reduced?0:950+Math.random()*350,fill:'forwards',easing:'linear'}));
  });
