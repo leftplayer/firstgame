@@ -240,3 +240,8 @@ header{min-height:32px;gap:12px;margin-top:8px;margin-bottom:24px}
 
 
 
+
+#ui-language{display:block;margin:0 0 10px;padding:8px 12px;border:1px solid #444;border-radius:8px;color:#ddd;background:#181818;font:12px var(--body-font);cursor:pointer}
+#ui-language:active{border-color:#ff921e;color:#ff921e}
+html[lang="zh-CN"] .metrics dt{font-size:11px}
+html[lang="zh-CN"] .result-summary .score .unit{font-size:.4em}

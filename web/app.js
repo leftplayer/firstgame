@@ -1,13 +1,17 @@
+import {UI_TEXT,UI_LANGUAGE_KEY,readUiLanguage,translate,applyUiLanguage} from './i18n.js';
 import {shareDetails,updateShareMetadata,shareViaBrowser} from './share.js';
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
 import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer,countUpSeconds} from './motion.js?v=full-pile-6';
 import {TypingFeedback} from './feedback.js';
 const $=id=>document.getElementById(id);
+let uiLanguage='en';try{uiLanguage=readUiLanguage(localStorage);}catch{}
+const t=key=>translate(uiLanguage,key);
 let typographyReady=false;
 let articles=[],article,session,composing=false,spans=[],caret,completed=false;
 let practice, glyphs=[];
 const input=$('input');
+$('status').textContent=t('loading');
 const feedback=new TypingFeedback();
 const rollingTimer=new RollingTimer($('timer'));
 let transition,transitionWidth;
@@ -17,7 +21,7 @@ let compositionStart=0, compositionEnd=0, compositionBase='', pendingText;
 function clearPending(){pendingText?.remove();pendingText=undefined;}
 function showPending(text){
  if(!session||completed||!caret)return;
- if(!pendingText){pendingText=document.createElement('span');pendingText.className='composition';pendingText.setAttribute('aria-label','正在输入');}
+ if(!pendingText){pendingText=document.createElement('span');pendingText.className='composition';pendingText.setAttribute('aria-label',t('composing'));}
  pendingText.textContent=text;caret.before(pendingText);
 }
 function pendingFromValue(){
@@ -150,8 +154,8 @@ function finish(){
  updateShareMetadata(shareDetails(article,seconds,location.href).title);
  $('accuracy').textContent=resultStats.accuracy.toFixed(1)+'%';
  $('speed').textContent=String(Math.round(article.language==='en'?resultStats.wpm:resultStats.cpm));
- $('speed-label').textContent=article.language==='en'?'WPM':'CPM';
- $('speed-label').setAttribute('aria-label',article.language==='en'?'每分钟英文单词数':'每分钟正确字符数');
+ $('speed-label').textContent=t(article.language==='en'?'wpm':'cpm');
+ $('speed-label').setAttribute('aria-label',t(article.language==='en'?'speedWords':'speedChars'));
  $('words-metric').hidden=article.language!=='en';
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
@@ -201,11 +205,11 @@ $('share').onclick=async()=>{
  const data=shareDetails(article,session.seconds(Date.now()),location.href);
  try{
   if(navigator.share)await shareViaBrowser(data);
-  else{await navigator.clipboard.writeText(`${data.title}\n${data.text}\n${data.url}`);$('message').textContent='分享文案和同篇文章链接已复制';}
- }catch(e){if(e.name!=='AbortError')$('message').textContent='分享未成功，可复制浏览器地址邀请朋友打同一篇。';}
+  else{await navigator.clipboard.writeText(`${data.title}\n${data.text}\n${data.url}`);$('message').textContent=t('copied');}
+ }catch(e){if(e.name!=='AbortError')$('message').textContent=t('shareError');}
 };
 function tick(){if(session&&!debugPreview)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
-try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
+try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent=t('loadError');}
 
 // Font switches preserve input and recalculate wrapping only after the faces load.
 const fontOptions={
@@ -265,7 +269,7 @@ function calibrateTypography(){
  if(!typographyReady||!typeMeasure)return;
  pageStyle.setProperty('--title-size',24*typeScale('title','en',700,'H',71)+'px');
  const family=fontOptions.en[fontChoice.title.en][0];
- const label=glyphMeasure(family,500,'Restart');
+ const label=glyphMeasure(family,500,$('restart').textContent);
  const buttonSize=Math.min(100*8.5/label.height,100*50/label.width);
  pageStyle.setProperty('--restart-size',buttonSize+'px');
  const actionSize=Math.min(100*10/label.height,100*66/label.width);
@@ -302,20 +306,20 @@ function fitBrand(){
  if(width>available)label.style.transform='scaleX('+Math.max(.1,available/width)+')';
 }
 async function changeFonts(next){
- const request=++fontRequest;$('font-note').textContent='正在加载字体…';
+ const request=++fontRequest;$('font-note').textContent=t('fontLoading');
  try{
   await Promise.all(fontScopes.flatMap(scope=>fontLangs.map(lang=>loadTypeface(lang,next[scope][lang]))));
   if(request!==fontRequest)return;
   fontChoice=next;
   for(const scope of fontScopes)for(const lang of fontLangs)pageStyle.setProperty('--font-'+scope+'-'+lang,'"'+fontOptions[lang][next[scope][lang]][0]+'"');
-   $('font-note').textContent='已应用 · 中文选项只改变中文 · 自动保存';
+   $('font-note').textContent=t('fontApplied');
   try{localStorage.setItem('firstgame.fonts.v2',JSON.stringify(next));}catch{}
   typographyReady=true;calibrateTypography();
   requestAnimationFrame(alignActiveLine);
  }catch{
   if(request!==fontRequest)return;
   fontDraft=structuredClone(fontChoice);refreshFontButtons();
-  $('font-note').textContent='加载失败，已保留原搭配；请重新选择重试';
+  $('font-note').textContent=t('fontError');
  }
 }
 
@@ -357,7 +361,7 @@ function switchDebugPage(page){
  burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting','finished');$('result').hidden=false;
  $('whole').style.fontSize='';$('fraction').style.fontSize='';
  $('accuracy').textContent='98.5%';$('speed').textContent=article.language==='en'?'72':'118';
- $('speed-label').textContent=article.language==='en'?'WPM':'CPM';
+ $('speed-label').textContent=t(article.language==='en'?'wpm':'cpm');
  $('words-metric').hidden=article.language!=='en';
  $('words').textContent=article.language==='en'?String((article.text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length):'—';
  $('characters').textContent=String(Array.from(article.text).length);$('message').textContent='';
@@ -376,3 +380,15 @@ $('brand-image').addEventListener('error',()=>{
 });
 try{localStorage.removeItem('firstgame.brand.v1');}catch{}
 fitBrand();
+
+function refreshUiLanguage(){
+ applyUiLanguage(document,uiLanguage,article?.language);
+ for(const id of ['status','message','font-note']){const node=$(id);const key=Object.keys(UI_TEXT.en).find(k=>UI_TEXT.en[k]===node.textContent||UI_TEXT.zh[k]===node.textContent);if(key)node.textContent=t(key);}
+ calibrateTypography();updateFontPanelLayout();
+}
+$('ui-language').onclick=()=>{
+ uiLanguage=uiLanguage==='en'?'zh':'en';
+ try{localStorage.setItem(UI_LANGUAGE_KEY,uiLanguage);}catch{}
+ refreshUiLanguage();
+};
+refreshUiLanguage();
