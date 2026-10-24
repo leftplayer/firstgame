@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TypingSession, chooseArticle } from '../assets/scripts/TypingSession.ts';
@@ -44,4 +45,17 @@ test('sub-second Chinese composition computes CPM from precise elapsed time',()=
 test('zero elapsed time is unavailable rather than a false zero speed',()=>{
  const s=new TypingSession('你好',true);s.input('你好',1000);assert.equal(s.stats(1000).cpm,null);
  const wrong=new TypingSession('你好',true);wrong.start(1000);wrong.input('再见',1500);assert.equal(wrong.stats(1500).cpm,0);
+});
+
+test('358-character passage retains its 75 words when input loses every space',()=>{
+ const articles=JSON.parse(readFileSync(new URL('../assets/resources/articles.json',import.meta.url),'utf8'));
+ const article=articles.find(a=>a.id==='en-friends-chandler-proposal');
+ assert.equal(Array.from(article.text).length,358);
+ const s=new TypingSession(article.text,true);s.start(1000);s.input('a'.repeat(358),61000);
+ assert.equal(s.stats(61000).words,75);assert.equal(s.stats(61000).wpm,75);assert.ok(s.stats(61000).accuracy<100);
+});
+test('wrong inserted spaces do not inflate words and partial progress excludes unseen words',()=>{
+ const s=new TypingSession('hello world again',true);s.start(0);s.input('a a a',1000);
+ assert.equal(s.stats(1000).words,1);
+ s.input('a a a a a a a a a',60000);assert.equal(s.stats(60000).words,3);
 });
