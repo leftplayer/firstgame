@@ -1,4 +1,4 @@
-import {shareDetails,updateShareMetadata,createResultPoster} from './share.js';
+import {shareDetails,updateShareMetadata} from './share.js';
 import {TypingSession,chooseArticle} from './session.js';
 import {prepareArticle} from './practice.js';
 import {captureGlyphs,morphGlyphs,fallGlyphs,RollingTimer,countUpSeconds} from './motion.js?v=full-pile-6';
@@ -67,7 +67,7 @@ async function restartWithShuffle(){
 }
 window.addEventListener('resize',()=>{if(transition&&innerWidth!==transitionWidth)transition.cancel();});
 function restart(selected){
- debugPreview=null;$('share').disabled=false;setDebugPage('typing');updateShareMetadata();closeSharePanel();
+ debugPreview=null;$('share').disabled=false;setDebugPage('typing');updateShareMetadata();
  resultCountUp?.cancel();resultCountUp=null;feedback.reset();
  clearTimeout(finishTimer);burst?.cancel();burst=null;resultStats=null;$('game').classList.remove('bursting');
  input.blur();composing=false;clearPending();article=selected??chooseArticle(articles,article?.id);practice=prepareArticle(article);session=new TypingSession(practice.target,true);completed=false;
@@ -196,38 +196,13 @@ for(const button of document.querySelectorAll('button')){
  button.addEventListener('contextmenu',event=>event.preventDefault());
 }
 $('restart').onclick=$('again').onclick=restartWithShuffle;
-let shareFile=null,posterURL=null,shareGeneration=0;
-function closeSharePanel(){
- shareGeneration++;shareFile=null;if(posterURL){URL.revokeObjectURL(posterURL);posterURL=null;}
- $('share-panel').close();$('share-preview').removeAttribute('src');$('share-fallback').hidden=true;
-}
-$('share-close').onclick=closeSharePanel;
-$('share-panel').addEventListener('cancel',closeSharePanel);
 $('share').onclick=async()=>{
  if(debugPreview||!completed)return;
- closeSharePanel();const generation=shareGeneration;
- $('share-panel').showModal();$('share-image').disabled=true;$('share-note').textContent='正在生成成绩图片…';
- try{
-  const blob=await createResultPoster({article,seconds:session.seconds(Date.now()),stats:resultStats,
-   dataFont:getComputedStyle($('whole')).fontFamily,bodyFont:getComputedStyle($('article')).fontFamily,
-   glyphs:spans.map(n=>({text:n.textContent,wrong:n.classList.contains('wrong')}))});
-  if(generation!==shareGeneration)return;
-  shareFile=new File([blob],'now-typing-result.png',{type:'image/png'});posterURL=URL.createObjectURL(blob);
-  $('share-preview').src=posterURL;$('share-image').disabled=false;
-  $('share-note').textContent='分享链接邀请朋友，或发送这张成绩图片。';
- }catch{if(generation===shareGeneration)$('share-note').textContent='图片生成失败，仍可分享同篇文章链接。';}
-};
-$('share-link').onclick=async()=>{
  const data=shareDetails(article,session.seconds(Date.now()),location.href);
- try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.title}\n${data.text}\n${data.url}`);$('share-note').textContent='邀请文案和同篇文章链接已复制';}}
- catch(e){if(e.name!=='AbortError'){$('share-note').textContent='可长按复制下方邀请链接';$('share-fallback').value=`${data.title}\n${data.text}\n${data.url}`;$('share-fallback').hidden=false;}}
-};
-$('share-image').onclick=async()=>{
- if(!shareFile)return;
  try{
-  if(navigator.canShare?.({files:[shareFile]})&&navigator.share)await navigator.share({files:[shareFile]});
-  else{const a=document.createElement('a');a.href=posterURL;a.download='now-typing-result.png';a.click();$('share-note').textContent='可保存图片，或长按上方图片发送给朋友。';}
- }catch(e){if(e.name!=='AbortError')$('share-note').textContent='请长按上方成绩图片保存或发送。';}
+  if(navigator.share)await navigator.share(data);
+  else{await navigator.clipboard.writeText(`${data.title}\n${data.text}\n${data.url}`);$('message').textContent='分享文案和同篇文章链接已复制';}
+ }catch(e){if(e.name!=='AbortError')$('message').textContent='分享未成功，可复制浏览器地址邀请朋友打同一篇。';}
 };
 function tick(){if(session&&!debugPreview)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
