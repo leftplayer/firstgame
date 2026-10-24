@@ -231,3 +231,9 @@ header{min-height:32px;gap:12px;margin-top:8px;margin-bottom:24px}
 .brand .brand-label{font-size:18px;line-height:24px;translate:none;transform-origin:left center}
 #restart{flex:0 0 auto}
 @media(max-width:350px){header{gap:8px}.brand,.brand.has-image{gap:6px}.brand-icon{width:33px;height:22px;flex-basis:33px}.brand-icon img{width:40.8px;height:40.8px;left:-2px;top:-8.5px}#brand-image,.brand[data-brand-style="paper"] #brand-image{height:22px;max-width:calc(100% - 39px)}}
+
+/* All artwork scales uniformly; icon and title shrink together on narrow screens. */
+.brand.has-image{--brand-height:24px}
+.brand.has-image .brand-icon{width:calc(var(--brand-height) * 1.583333);height:var(--brand-height);flex:0 0 calc(var(--brand-height) * 1.583333)}
+.brand.has-image .brand-icon img{width:calc(var(--brand-height) * 1.870833);height:calc(var(--brand-height) * 1.870833);left:calc(var(--brand-height) * -.091667);top:calc(var(--brand-height) * -.391667)}
+.brand.has-image #brand-image{height:var(--brand-height);max-width:none;flex:none;object-fit:contain;transform:none}

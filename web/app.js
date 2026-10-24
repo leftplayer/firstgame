@@ -265,7 +265,18 @@ function calibrateTypography(){
 }
 function fitBrand(){
  const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label');
- if(brand.classList.contains('has-image'))return;
+ if(brand.classList.contains('has-image')){
+  const image=$('brand-image');
+  if(image.naturalWidth&&image.naturalHeight){
+   const ratio=image.naturalWidth/image.naturalHeight;
+   const gap=window.innerWidth<=350?6:8,maxHeight=window.innerWidth<=350?22:24;
+   const height=Math.min(maxHeight,Math.max(1,(brand.clientWidth-gap)/(ratio+38/24)));
+   brand.style.setProperty('--brand-height',height+'px');
+   image.style.width=(height*ratio)+'px';
+  }
+  return;
+ }
+ brand.style.removeProperty('--brand-height');
  label.style.transform='';
  // On very narrow screens constrain only width, never shrink title height.
  const width=label.getBoundingClientRect().width;
@@ -337,7 +348,7 @@ function switchDebugPage(page){
 for(const button of document.querySelectorAll('[data-debug-page]'))button.addEventListener('click',()=>switchDebugPage(button.dataset.debugPage));
 
 // Reference artwork titles are independent of the font experiment settings.
-const brandAssets={unfinished:'./brand/title-unfinished.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark.svg'};
+const brandAssets={cursor:'./brand/title-cursor.svg',overprint:'./brand/title-overprint.svg',unfinished:'./brand/title-unfinished.svg',paper:'./brand/title-paper.svg',mark:'./brand/title-mark.svg'};
 function setBrandStyle(style){
  if(style!=='text'&&!Object.hasOwn(brandAssets,style))style='text';
  const brand=document.querySelector('.brand'),label=brand.querySelector('.brand-label'),image=$('brand-image');
@@ -353,6 +364,8 @@ for(const button of document.querySelectorAll('[data-brand-style]')){
  button.addEventListener('pointerdown',e=>{if(e.button===0)e.preventDefault();});
  button.addEventListener('click',()=>{feedback.button();setBrandStyle(button.dataset.brandStyle);});
 }
+$('brand-image').addEventListener('load',fitBrand);
+new ResizeObserver(fitBrand).observe(document.querySelector('.brand'));
 $('brand-image').addEventListener('error',()=>setBrandStyle('text'));
 let savedBrand='unfinished';try{savedBrand=localStorage.getItem('firstgame.brand.v1')||'unfinished';}catch{}
 setBrandStyle(savedBrand);
