@@ -153,7 +153,8 @@ function finish(){
  resultStats=session.stats(Date.now());
  updateShareMetadata(shareDetails(article,seconds,location.href).title);
  $('accuracy').textContent=resultStats.accuracy.toFixed(1)+'%';
- $('speed').textContent=String(Math.round(article.language==='en'?resultStats.wpm:resultStats.cpm));
+ const rate=article.language==='en'?resultStats.wpm:resultStats.cpm;
+ $('speed').textContent=rate===null?'—':String(Math.round(rate));
  $('speed-label').textContent=t(article.language==='en'?'wpm':'cpm');
  $('speed-label').setAttribute('aria-label',t(article.language==='en'?'speedWords':'speedChars'));
  $('words-metric').hidden=article.language!=='en';
@@ -168,6 +169,7 @@ input.addEventListener('keydown',event=>{
 });
 input.addEventListener('beforeinput',event=>{if(event.inputType?.startsWith('insert'))startClock();});
 input.addEventListener('compositionstart',()=>{
+ startClock();
  composing=true;compositionBase=input.value;
  compositionStart=input.selectionStart??input.value.length;
  compositionEnd=input.selectionEnd??compositionStart;

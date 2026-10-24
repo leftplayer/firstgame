@@ -19,7 +19,7 @@ test('preedit cannot end round until composition commits, even with unchanged te
  s.input('ax',3000,true);assert.equal(s.phase,'finished');assert.equal(s.seconds(9999),2);
 });
 test('statistics handle unicode and zero duration without infinity',()=>{
- const s=new TypingSession('😀。',true);s.input('😀。',1000);assert.deepEqual(s.stats(1000),{characters:2,correct:2,accuracy:100,cpm:0,words:0,wpm:0});
+ const s=new TypingSession('😀。',true);s.input('😀。',1000);assert.deepEqual(s.stats(1000),{characters:2,correct:2,accuracy:100,cpm:null,words:0,wpm:0});
 });
 
 test('WPM uses actual English word count rather than five-character units',()=>{
@@ -35,4 +35,13 @@ test('Chinese CPM counts correct committed characters including punctuation',()=
  s.input('臣本布依，躬耕于南阳。',30000);
  assert.equal(s.phase,'finished');assert.equal(s.stats(30000).cpm,20);
  assert.equal(s.stats(30000).characters,11);
+});
+
+test('sub-second Chinese composition computes CPM from precise elapsed time',()=>{
+ const s=new TypingSession('你好',true);s.start(1000);s.input('你好',1250);
+ assert.equal(s.seconds(9999),.25);assert.equal(s.stats(9999).cpm,480);
+});
+test('zero elapsed time is unavailable rather than a false zero speed',()=>{
+ const s=new TypingSession('你好',true);s.input('你好',1000);assert.equal(s.stats(1000).cpm,null);
+ const wrong=new TypingSession('你好',true);wrong.start(1000);wrong.input('再见',1500);assert.equal(wrong.stats(1500).cpm,0);
 });

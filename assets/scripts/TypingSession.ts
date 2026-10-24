@@ -27,12 +27,12 @@ export class TypingSession {
   seconds(now: number): number {
     return this.startedAt === null ? 0 : Math.max(0, ((this.finishedAt ?? now) - this.startedAt) / 1000);
   }
-  stats(now: number): { characters: number; correct: number; accuracy: number; cpm: number; words: number; wpm: number } {
+  stats(now: number): { characters: number; correct: number; accuracy: number; cpm: number | null; words: number; wpm: number | null } {
     const characters = this.cursor;
     const correct = this.states.filter(state => state === 'correct').length;
     const seconds = this.seconds(now);
     const words = (this.value.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g) ?? []).length;
-    return { characters, correct, accuracy: characters ? correct / characters * 100 : 0, cpm: seconds > 0 ? correct * 60 / seconds : 0, words, wpm: seconds > 0 ? words * 60 / seconds : 0 };
+    return { characters, correct, accuracy: characters ? correct / characters * 100 : 0, cpm: seconds > 0 ? correct * 60 / seconds : (correct ? null : 0), words, wpm: seconds > 0 ? words * 60 / seconds : (words ? null : 0) };
   }
   get cursor(): number { return Array.from(this.value).length; }
   get states(): ('pending' | 'correct' | 'wrong')[] {
