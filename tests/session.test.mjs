@@ -12,7 +12,7 @@ test('empty configuration fails explicitly',()=>{assert.throws(()=>new TypingSes
 
 test('web mode finishes full length with errors and reports final accuracy and speed',()=>{
  const s=new TypingSession('风穿过。',true);s.start(1000);s.input('风错过。',31000);
- assert.equal(s.phase,'finished');assert.deepEqual(s.stats(99999),{characters:4,correct:3,accuracy:75,cpm:8,words:0,wpm:0});
+ assert.equal(s.phase,'finished');assert.deepEqual(s.stats(99999),{characters:4,correct:3,accuracy:75,cpm:6,words:0,wpm:0});
 });
 test('preedit cannot end round until composition commits, even with unchanged text',()=>{
  const s=new TypingSession('ab',true);s.start(1000);s.input('ax',2000,false);assert.equal(s.phase,'typing');
@@ -28,4 +28,11 @@ test('WPM uses actual English word count rather than five-character units',()=>{
 });
 test('word count ignores punctuation and preserves apostrophes and hyphenated words',()=>{
  const s=new TypingSession("don't stop, well-known friend!",true);s.start(0);s.input(s.target,60000);assert.equal(s.stats(60000).words,4);
+});
+
+test('Chinese CPM counts correct committed characters including punctuation',()=>{
+ const s=new TypingSession('臣本布衣，躬耕于南阳。',true);s.start(0);
+ s.input('臣本布依，躬耕于南阳。',30000);
+ assert.equal(s.phase,'finished');assert.equal(s.stats(30000).cpm,20);
+ assert.equal(s.stats(30000).characters,11);
 });

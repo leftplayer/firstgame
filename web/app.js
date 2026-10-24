@@ -82,6 +82,12 @@ function restart(selected){
   if(article.language==='en'&&!/\s/.test(unit.text)){
    if(!word){word=document.createElement('span');word.className='word';$('article').append(word);}
    word.append(glyph);
+  }else if(article.language==='en'&&unit.text===' '){
+   // Keep the actual, typeable space attached to the preceding word.
+   const previousWord=word??$('article').lastElementChild;
+   if(previousWord?.classList.contains('word'))previousWord.append(glyph);
+   else $('article').append(glyph);
+   word=null;
   }else{word=null;$('article').append(glyph);}
   glyphs.push({...unit,node:glyph});
 
@@ -141,7 +147,10 @@ function finish(){
  try{const parsed=JSON.parse(localStorage.getItem('firstgame.records.v1')||'[]');const records=Array.isArray(parsed)?parsed:[];const previous=records.slice().reverse().find(r=>r?.articleId===article.id&&r.mode==='text-free'&&Number.isFinite(r.seconds));records.push({articleId:article.id,mode:'text-free',seconds,at:new Date().toISOString()});localStorage.setItem('firstgame.records.v1',JSON.stringify(records.slice(-50)));}catch{}
  resultStats=session.stats(Date.now());
  $('accuracy').textContent=resultStats.accuracy.toFixed(1)+'%';
- $('speed').textContent=article.language==='en'?String(Math.round(resultStats.wpm)):'—';
+ $('speed').textContent=String(Math.round(article.language==='en'?resultStats.wpm:resultStats.cpm));
+ $('speed-label').textContent=article.language==='en'?'WPM':'CPM';
+ $('speed-label').setAttribute('aria-label',article.language==='en'?'每分钟英文单词数':'每分钟正确字符数');
+ $('words-metric').hidden=article.language!=='en';
  $('words').textContent=article.language==='en'?String(resultStats.words):'—';
  $('characters').textContent=String(resultStats.characters);
  $('message').textContent=message;
@@ -185,7 +194,7 @@ for(const button of document.querySelectorAll('button')){
  button.addEventListener('contextmenu',event=>event.preventDefault());
 }
 $('restart').onclick=$('again').onclick=restartWithShuffle;
-$('share').onclick=async()=>{if(debugPreview)return;const data={title:'Now Typing',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':''}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
+$('share').onclick=async()=>{if(debugPreview)return;const data={title:'Now Typing',text:`我用了 ${session.seconds(Date.now()).toFixed(2)} 秒，准确率 ${resultStats.accuracy.toFixed(1)}%，${article.language==='en'?'字速 '+Math.round(resultStats.wpm)+' 词/分钟，共 '+resultStats.words+' 个单词，':'字速 '+Math.round(resultStats.cpm)+' 字/分钟，共 '}${resultStats.characters} 字符。你呢？`,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${data.text} ${data.url}`);$('message').textContent='同篇文章链接已复制';}}catch(e){if(e.name!=='AbortError')$('message').textContent='请复制浏览器地址，或截屏保存成绩。';}};
 function tick(){if(session&&!debugPreview)rollingTimer.set(Math.floor(session.seconds(Date.now())));requestAnimationFrame(tick);}tick();
 try{const response=await fetch('./articles.json',{cache:'no-cache'});if(!response.ok)throw Error('articles');articles=await response.json();if(!Array.isArray(articles)||!articles.length)throw Error('empty');const id=new URLSearchParams(location.search).get('article');restart(articles.find(a=>a.id===id));}catch{$('status').textContent='文章加载失败，请刷新页面重试。';}
 
@@ -338,7 +347,9 @@ function switchDebugPage(page){
  const visible=captureGlyphs(spans,$('viewport'),{all:true}).map(g=>({...g,x:g.x+$('viewport').getBoundingClientRect().left-$('game').getBoundingClientRect().left,y:g.y+$('viewport').getBoundingClientRect().top-$('game').getBoundingClientRect().top}));
  burst=fallGlyphs(visible,$('game'));$('game').classList.add('bursting','finished');$('result').hidden=false;
  $('whole').style.fontSize='';$('fraction').style.fontSize='';
- $('accuracy').textContent='98.5%';$('speed').textContent=article.language==='en'?'72':'—';
+ $('accuracy').textContent='98.5%';$('speed').textContent=article.language==='en'?'72':'118';
+ $('speed-label').textContent=article.language==='en'?'WPM':'CPM';
+ $('words-metric').hidden=article.language!=='en';
  $('words').textContent=article.language==='en'?String((article.text.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g)||[]).length):'—';
  $('characters').textContent=String(Array.from(article.text).length);$('message').textContent='';
  $('share').disabled=true;
